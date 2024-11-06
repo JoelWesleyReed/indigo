@@ -2,43 +2,55 @@
 
 All notable changes to INDIGO framework will be documented in this file.
 
-# [2.0-298] - 3 Nov Sun 2024
+# [2.0-298] - - Nov - 2024
 
 ## Overall:
+- ccd_driver:
+	- TIFF generation fixed
 
+## Driver fixes:
 - indigo_agent_imager:
 	- experimental bahtinov focusing added
 	- estimator property items labels changed
 	- focus routines refactoring
+	- add "Error:" and "Warning:" prefixes to some messages to show them color coded in clients
+	- do not show warning if stars are less than requested if U-Curve is not used
+	- focuser movement can be controlled by joystick buttons
+	- remove the flat bottom of gaus_blur() - better for iterative focusing simulation but U-Curve simulation deteriorated a bit.
+	- single frame preview process added
+	- separation of AGENT_IMAGER_FOCUS_INITIAL_ITEM to AGENT_IMAGER_FOCUS_ITERATVE_INITIAL_ITEM and AGENT_IMAGER_FOCUS_UCURVE_STEP_ITEM and synchronization from AGENT_IMAGER_FOCUS_FINAL_ITEM to AGENT_IMAGER_FOCUS_ITERATVE_FINAL_ITEM. New clients should prefer AGENT_IMAGER_FOCUS_UCURVE_STEP_ITEM, AGENT_IMAGER_FOCUS_ITERATVE_INITIAL_ITEM and AGENT_IMAGER_FOCUS_ITERATVE_FINAL_ITEM if present over AGENT_IMAGER_FOCUS_INITIAL_ITEM and AGENT_IMAGER_FOCUS_FINAL_ITEM retained for backward compatibility only.
+
+- indigo_agent_guider:
+	- single frame preview process added
 
 - indigo_ccd_simulator
 	- CCD Bahtinov Mask Simulator device added
 
 - indigo_ccd_qhy2
-	- SDK updated
+	- updated SDK V2024.10.30
 	- native ARM support added to macOS build
 	
 - indigo_ccd_svb
-	- SDK updated
-	
-## Driver fixes:
+	- updated SDK v1.12.8
 
-- ccd_driver:
-	- TIFF generation fixed
-	
+indigo_wheel_playerone:
+	- update SDK v.1.2.1
+
 - indigo_mount_synscan
 	- equatorial coordinates state transition fixed
 
 - indigo_ccd_ptp
 	- Fuji control priority bug fixed
-	
-## New Drivers:
-
-- indigo_wheel_astroasis
-	- Astroasis wheel driver
 
 - indigo_focuser_astroasis
-	- Astroasis focuser driver
+	- SDK updated to v.2.0.2
+	- fix enumeration
+	- follow the convention to use #XX as device suffix not (XX)
+	- add factory reset
+
+## New Drivers:
+- indigo_wheel_astroasis
+	- Astroasis wheel driver
 
 # [2.0-296] - 26 Oct Sat 2024 [This is a huge release]
 ## Overall:

@@ -51,6 +51,27 @@ extern "C" {
 
 #define CCD_SIMULATOR_FILE_NAME						"CCD File Simulator"
 
+//#define CCD_SIMULATOR_BAHTINOV_IMAGE
+
+//#define ENABLE_BACKLASH_PROPERTY
+
+// USE_DISK_BLUR is used to simulate disk blur effect
+// if not defined then gaussian blur is used
+//#define USE_DISK_BLUR
+
+// related to embedded image size, don't touch!
+#define IMAGER_WIDTH        		1600
+#define IMAGER_HEIGHT       		1200
+#define BAHTINOV_WIDTH        	500
+#define BAHTINOV_HEIGHT       	500
+#define BAHTINOV_MAX_STEPS      15
+//#define BAHTINOV_ASYMETRIC
+#define DSLR_WIDTH        			1600
+#define DSLR_HEIGHT       			1200
+
+extern unsigned short indigo_ccd_simulator_raw_image[];
+extern unsigned char indigo_ccd_simulator_rgb_image[];
+extern unsigned char indigo_ccd_simulator_bahtinov_image[][BAHTINOV_WIDTH * BAHTINOV_HEIGHT];
 
 /** Create CCD Simulator device instance
  */

@@ -44,15 +44,6 @@
 
 #include "indigo_ccd_simulator.h"
 
-// related to embedded image size, don't touch!
-#define IMAGER_WIDTH        		1600
-#define IMAGER_HEIGHT       		1200
-#define BAHTINOV_WIDTH        	500
-#define BAHTINOV_HEIGHT       	500
-#define BAHTINOV_MAX_STEPS      15
-#define DSLR_WIDTH        			1600
-#define DSLR_HEIGHT       			1200
-
 // can be changed
 #define GUIDER_MAX_MAG					8
 #define GUIDER_MAX_STARS				400
@@ -123,9 +114,6 @@
 #define FOCUSER_SETTINGS_BL_ITEM		(FOCUSER_SETTINGS_PROPERTY->items + 1)
 
 
-extern unsigned short indigo_ccd_simulator_raw_image[];
-extern unsigned char indigo_ccd_simulator_rgb_image[];
-extern unsigned char indigo_ccd_simulator_bahtinov_image[][BAHTINOV_WIDTH * BAHTINOV_HEIGHT];
 extern struct _cat { float ra, dec; unsigned char mag; } indigo_ccd_simulator_cat[];
 extern int indigo_ccd_simulator_cat_size;
 
@@ -431,7 +419,15 @@ static void create_frame(indigo_device *device) {
 		} else if (focus < -BAHTINOV_MAX_STEPS) {
 			focus = -BAHTINOV_MAX_STEPS;
 		}
-		uint8_t (*source_pixels)[BAHTINOV_WIDTH] = (uint8_t (*)[BAHTINOV_HEIGHT]) indigo_ccd_simulator_bahtinov_image[abs(focus + BAHTINOV_MAX_STEPS)];
+#ifdef BAHTINOV_ASYMETRIC
+		uint8_t (*source_pixels)[BAHTINOV_WIDTH] = (uint8_t (*)[BAHTINOV_HEIGHT]) indigo_ccd_simulator_bahtinov_image[focus + BAHTINOV_MAX_STEPS];
+#else
+		if (focus < 0) {
+			focus = -focus;
+			angle += M_PI;
+		}
+		uint8_t (*source_pixels)[BAHTINOV_WIDTH] = (uint8_t (*)[BAHTINOV_HEIGHT]) indigo_ccd_simulator_bahtinov_image[focus];
+#endif
 		uint8_t (*target_pixels)[BAHTINOV_WIDTH] = (uint8_t (*)[BAHTINOV_HEIGHT]) (PRIVATE_DATA->bahtinov_image + FITS_HEADER_SIZE);
 		if (angle == 0) {
 			for (int y = 0; y < BAHTINOV_HEIGHT; y++) {
@@ -1614,7 +1610,7 @@ static void focuser_timer_callback(indigo_device *device) {
 				FOCUSER_SETTINGS_FOCUS_ITEM->number.value += steps - PRIVATE_DATA->backlash_out;
 				PRIVATE_DATA->backlash_out = 0;
 			}
-			INDIGO_DRIVER_DEBUG(DRIVER_NAME, "position = %d, focus = %d, backlash_out = %d", (int)FOCUSER_POSITION_ITEM->number.value, (int)FOCUSER_SETTINGS_FOCUS_ITEM->number.value, PRIVATE_DATA->backlash_out);
+			// INDIGO_DRIVER_DEBUG(DRIVER_NAME, "position = %d, focus = %d, backlash_out = %d", (int)FOCUSER_POSITION_ITEM->number.value, (int)FOCUSER_SETTINGS_FOCUS_ITEM->number.value, PRIVATE_DATA->backlash_out);
 			indigo_update_property(device, FOCUSER_POSITION_PROPERTY, NULL);
 			FOCUSER_STEPS_PROPERTY->state = INDIGO_BUSY_STATE;
 			indigo_update_property(device, FOCUSER_STEPS_PROPERTY, NULL);
@@ -1635,7 +1631,7 @@ static void focuser_timer_callback(indigo_device *device) {
 				FOCUSER_SETTINGS_FOCUS_ITEM->number.value -= steps - PRIVATE_DATA->backlash_in;
 				PRIVATE_DATA->backlash_in = 0;
 			}
-			INDIGO_DRIVER_DEBUG(DRIVER_NAME, "position = %d, focus = %d, backlash_in = %d", (int)FOCUSER_POSITION_ITEM->number.value, (int)FOCUSER_SETTINGS_FOCUS_ITEM->number.value, PRIVATE_DATA->backlash_in);
+			// INDIGO_DRIVER_DEBUG(DRIVER_NAME, "position = %d, focus = %d, backlash_in = %d", (int)FOCUSER_POSITION_ITEM->number.value, (int)FOCUSER_SETTINGS_FOCUS_ITEM->number.value, PRIVATE_DATA->backlash_in);
 			indigo_update_property(device, FOCUSER_STEPS_PROPERTY, NULL);
 			indigo_update_property(device, FOCUSER_SETTINGS_PROPERTY, NULL);
 			indigo_set_timer(device, 0.1, focuser_timer_callback, NULL);
