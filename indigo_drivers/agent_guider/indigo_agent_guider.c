@@ -23,7 +23,7 @@
  \file indigo_agent_guider.c
  */
 
-#define DRIVER_VERSION 0x0024
+#define DRIVER_VERSION 0x0025
 #define DRIVER_NAME	"indigo_agent_guider"
 
 #include <stdlib.h>
@@ -50,7 +50,7 @@
 #define PI (3.14159265358979)
 #define PI2 (PI/2)
 
-#define DONUTS_MIN_SNR (4.0)      /* Minimum SNR for donuts detection */
+#define DONUTS_MIN_SNR (19.0)      /* Minimum SNR for donuts detection */
 
 #define MIN_COS_DEC (0.017)       /* DEC = ~89 degrees */
 
@@ -756,6 +756,8 @@ static bool capture_and_process_frame(indigo_device *device) {
 				DEVICE_PRIVATE_DATA->reference->centroid_x /= used;
 				DEVICE_PRIVATE_DATA->reference->centroid_y /= used;
 				DEVICE_PRIVATE_DATA->reference->snr = DEVICE_PRIVATE_DATA->reference[1].snr;
+			} else {
+				result = INDIGO_FAILED;
 			}
 			AGENT_GUIDER_STATS_SNR_ITEM->number.value = DEVICE_PRIVATE_DATA->reference->snr;
 			if (result == INDIGO_OK) {
@@ -1089,7 +1091,7 @@ static bool guide_and_capture_frame(indigo_device *device, double ra, double dec
 	}
 	if (!capture_and_process_frame(device)) {
 		if (DEVICE_PRIVATE_DATA->no_guiding_star) {
-			if (  DEVICE_PRIVATE_DATA->first_frame) {
+			if (DEVICE_PRIVATE_DATA->first_frame) {
 				if (!AGENT_GUIDER_DETECTION_DONUTS_ITEM->sw.value) {
 					clear_selection(device);
 					if (check_selection(device)) {
@@ -1145,7 +1147,6 @@ static bool calibrate(indigo_device *device) {
 	}
 	int upload_mode = indigo_save_switch_state(device, CCD_UPLOAD_MODE_PROPERTY_NAME, CCD_UPLOAD_MODE_CLIENT_ITEM_NAME);
 	int image_format = indigo_save_switch_state(device, CCD_IMAGE_FORMAT_PROPERTY_NAME, CCD_IMAGE_FORMAT_RAW_ITEM_NAME);
-	clear_selection(device);
 	if (!AGENT_GUIDER_DETECTION_DONUTS_ITEM->sw.value) {
 		check_selection(device);
 	}
@@ -1447,7 +1448,6 @@ static bool guide(indigo_device *device) {
 	allow_abort_by_mount_agent(device, true);
 	int upload_mode = indigo_save_switch_state(device, CCD_UPLOAD_MODE_PROPERTY_NAME, CCD_UPLOAD_MODE_CLIENT_ITEM_NAME);
 	int image_format = indigo_save_switch_state(device, CCD_IMAGE_FORMAT_PROPERTY_NAME, CCD_IMAGE_FORMAT_RAW_ITEM_NAME);
-	clear_selection(device);
 	if (!AGENT_GUIDER_DETECTION_DONUTS_ITEM->sw.value) {
 		check_selection(device);
 	}
@@ -1469,11 +1469,18 @@ static bool guide(indigo_device *device) {
 		if (!capture_and_process_frame(device)) {
 			if (DEVICE_PRIVATE_DATA->no_guiding_star) {
 				if (DEVICE_PRIVATE_DATA->first_frame) {
-					clear_selection(device);
 					AGENT_GUIDER_STATS_FRAME_ITEM->number.value = 0;
 					DEVICE_PRIVATE_DATA->first_frame = false;
-					indigo_send_message(device, "Error: No guide stars found");
-					break;
+					DEVICE_PRIVATE_DATA->silence_warnings = true;
+					if (!AGENT_GUIDER_DETECTION_DONUTS_ITEM->sw.value) {
+						clear_selection(device);
+						if (!find_stars(device) || !select_stars(device)) {
+							indigo_send_message(device, "Error: No guide stars found");
+							break;
+						}
+					} else {
+						break;
+					}
 				} else if (AGENT_GUIDER_FAIL_ON_GUIDING_ERROR_ITEM->sw.value) {
 					indigo_update_property(device, AGENT_GUIDER_STATS_PROPERTY, NULL);
 					break;
@@ -1884,7 +1891,7 @@ static indigo_result agent_device_attach(indigo_device *device) {
 		indigo_init_switch_item(AGENT_GUIDER_START_CALIBRATION_AND_GUIDING_ITEM, AGENT_GUIDER_START_CALIBRATION_AND_GUIDING_ITEM_NAME, "Start calibration and guiding", false);
 		indigo_init_switch_item(AGENT_GUIDER_START_GUIDING_ITEM, AGENT_GUIDER_START_GUIDING_ITEM_NAME, "Start guiding", false);
 		indigo_init_switch_item(AGENT_GUIDER_CLEAR_SELECTION_ITEM, AGENT_GUIDER_CLEAR_SELECTION_ITEM_NAME, "Clear star selection", false);
-		AGENT_ABORT_PROCESS_PROPERTY = indigo_init_switch_property(NULL, device->name, AGENT_ABORT_PROCESS_PROPERTY_NAME, "Agent", "Abort", INDIGO_OK_STATE, INDIGO_RW_PERM, INDIGO_AT_MOST_ONE_RULE, 1);
+		AGENT_ABORT_PROCESS_PROPERTY = indigo_init_switch_property(NULL, device->name, AGENT_ABORT_PROCESS_PROPERTY_NAME, "Agent", "Abort process", INDIGO_OK_STATE, INDIGO_RW_PERM, INDIGO_AT_MOST_ONE_RULE, 1);
 		if (AGENT_ABORT_PROCESS_PROPERTY == NULL)
 			return INDIGO_FAILED;
 		indigo_init_switch_item(AGENT_ABORT_PROCESS_ITEM, AGENT_ABORT_PROCESS_ITEM_NAME, "Abort", false);
@@ -1994,7 +2001,7 @@ static indigo_result agent_device_attach(indigo_device *device) {
 		indigo_init_number_item(AGENT_GUIDER_STATS_RMSE_DEC_ITEM, AGENT_GUIDER_STATS_RMSE_DEC_ITEM_NAME, "RMSE Dec (px)", -1000, 1000, 0, 0);
 		indigo_init_number_item(AGENT_GUIDER_STATS_RMSE_RA_S_ITEM, AGENT_GUIDER_STATS_RMSE_RA_S_ITEM_NAME, "RMSE RA (\")", -1000, 1000, 0, 0);
 		indigo_init_number_item(AGENT_GUIDER_STATS_RMSE_DEC_S_ITEM, AGENT_GUIDER_STATS_RMSE_DEC_S_ITEM_NAME, "RMSE Dec (\")", -1000, 1000, 0, 0);
-		indigo_init_number_item(AGENT_GUIDER_STATS_SNR_ITEM, AGENT_GUIDER_STATS_SNR_ITEM_NAME, "SNR", 0, 1000, 0, 0);
+		indigo_init_number_item(AGENT_GUIDER_STATS_SNR_ITEM, AGENT_GUIDER_STATS_SNR_ITEM_NAME, "Frame digest SNR", 0, 1000, 0, 0);
 		indigo_init_number_item(AGENT_GUIDER_STATS_DELAY_ITEM, AGENT_GUIDER_STATS_DELAY_ITEM_NAME, "Remaining delay (s)", 0, 100, 0, 0);
 		indigo_init_number_item(AGENT_GUIDER_STATS_DITHERING_ITEM, AGENT_GUIDER_STATS_DITHERING_ITEM_NAME, "Dithering RMSE (px)", 0, 100, 0, 0);
 		// -------------------------------------------------------------------------------- Logging
@@ -2506,8 +2513,9 @@ static indigo_result agent_define_property(indigo_client *client, indigo_device 
 				if (reset_selection) {
 					CLIENT_PRIVATE_DATA->last_width = CLIENT_PRIVATE_DATA->frame[2] / CLIENT_PRIVATE_DATA->bin_x;
 					CLIENT_PRIVATE_DATA->last_height = CLIENT_PRIVATE_DATA->frame[3] / CLIENT_PRIVATE_DATA->bin_y;
+					AGENT_GUIDER_SELECTION_INCLUDE_LEFT_ITEM->number.value = AGENT_GUIDER_SELECTION_INCLUDE_TOP_ITEM->number.value = AGENT_GUIDER_SELECTION_INCLUDE_WIDTH_ITEM->number.value = AGENT_GUIDER_SELECTION_INCLUDE_HEIGHT_ITEM->number.value = AGENT_GUIDER_SELECTION_EXCLUDE_LEFT_ITEM->number.value = AGENT_GUIDER_SELECTION_EXCLUDE_TOP_ITEM->number.value = AGENT_GUIDER_SELECTION_EXCLUDE_WIDTH_ITEM->number.value = AGENT_GUIDER_SELECTION_EXCLUDE_HEIGHT_ITEM->number.value = 0;
 					validate_include_region(device, false);
-					indigo_update_property(device, AGENT_GUIDER_SELECTION_PROPERTY, NULL);
+					clear_selection(device);
 				}
 			}
 		} else {
@@ -2538,36 +2546,27 @@ static indigo_result agent_update_property(indigo_client *client, indigo_device 
 			}
 		} else if (!strcmp(property->name, CCD_BIN_PROPERTY_NAME)) {
 			if (property->state == INDIGO_OK_STATE) {
-				double ratio_x = 1, ratio_y = 1;
 				bool reset_selection = false;
 				for (int i = 0; i < property->count; i++) {
 					indigo_item *item = property->items + i;
 					if (strcmp(item->name, CCD_BIN_HORIZONTAL_ITEM_NAME) == 0) {
 						if (CLIENT_PRIVATE_DATA->bin_x != item->number.value) {
-							ratio_x = CLIENT_PRIVATE_DATA->bin_x / item->number.target;
 							CLIENT_PRIVATE_DATA->bin_x = item->number.value;
 							reset_selection = true;
 						}
 					} else if (strcmp(item->name, CCD_BIN_VERTICAL_ITEM_NAME) == 0) {
 						if (CLIENT_PRIVATE_DATA->bin_y != item->number.value) {
-							ratio_y = CLIENT_PRIVATE_DATA->bin_y / item->number.target;
 							CLIENT_PRIVATE_DATA->bin_y = item->number.value;
 							reset_selection = true;
 						}
 					}
 				}
-				if (ratio_x == ratio_y) {
-					AGENT_GUIDER_SELECTION_RADIUS_ITEM->number.value = AGENT_GUIDER_SELECTION_RADIUS_ITEM->number.target *= ratio_x;
-					AGENT_GUIDER_SELECTION_SUBFRAME_ITEM->number.value = AGENT_GUIDER_SELECTION_SUBFRAME_ITEM->number.target *= ratio_x;
-					indigo_update_property(FILTER_CLIENT_CONTEXT->device, AGENT_GUIDER_SELECTION_PROPERTY, NULL);
-				} else {
-					indigo_send_message(device, "Automatic adjustment of '%s' and '%s' is not supported for asymmetric binning change", AGENT_GUIDER_SELECTION_RADIUS_ITEM->label, AGENT_GUIDER_SELECTION_SUBFRAME_ITEM->label);
-				}
 				if (reset_selection) {
 					CLIENT_PRIVATE_DATA->last_width = CLIENT_PRIVATE_DATA->frame[2] / CLIENT_PRIVATE_DATA->bin_x;
 					CLIENT_PRIVATE_DATA->last_height = CLIENT_PRIVATE_DATA->frame[3] / CLIENT_PRIVATE_DATA->bin_y;
+					AGENT_GUIDER_SELECTION_INCLUDE_LEFT_ITEM->number.value = AGENT_GUIDER_SELECTION_INCLUDE_TOP_ITEM->number.value = AGENT_GUIDER_SELECTION_INCLUDE_WIDTH_ITEM->number.value = AGENT_GUIDER_SELECTION_INCLUDE_HEIGHT_ITEM->number.value = AGENT_GUIDER_SELECTION_EXCLUDE_LEFT_ITEM->number.value = AGENT_GUIDER_SELECTION_EXCLUDE_TOP_ITEM->number.value = AGENT_GUIDER_SELECTION_EXCLUDE_WIDTH_ITEM->number.value = AGENT_GUIDER_SELECTION_EXCLUDE_HEIGHT_ITEM->number.value = 0;
 					validate_include_region(device, false);
-					indigo_update_property(device, AGENT_GUIDER_SELECTION_PROPERTY, NULL);
+					clear_selection(device);
 				}
 			}
 		} else {

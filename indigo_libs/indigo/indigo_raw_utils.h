@@ -53,6 +53,7 @@ typedef struct {
 	indigo_guide_algorithm algorithm;
 	int width;
 	int height;
+	double snr;
 	union {
 		double (*fft_x)[2];
 		double centroid_x;
@@ -61,7 +62,6 @@ typedef struct {
 		double (*fft_y)[2];
 		double centroid_y;
 	};
-	double snr;
 } indigo_frame_digest;
 
 

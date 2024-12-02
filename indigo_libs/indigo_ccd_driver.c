@@ -1178,11 +1178,11 @@ static void raw_to_tiff(indigo_device *device, void *data_in, int frame_width, i
 	TIFFSetField(tiff, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
 	time_t timer;
 	struct tm* tm_info;
-	char date_time_end[20];
+	char date_time_start[20];
 	time(&timer);
 	timer -= CCD_EXPOSURE_ITEM->number.target;
 	tm_info = gmtime(&timer);
-	strftime(date_time_end, 20, "%Y-%m-%dT%H:%M:%S", tm_info);
+	strftime(date_time_start, 20, "%Y-%m-%dT%H:%M:%S", tm_info);
 	int horizontal_bin = CCD_BIN_HORIZONTAL_ITEM->number.value;
 	int vertical_bin = CCD_BIN_VERTICAL_ITEM->number.value;
 	char *fits_header = malloc(FITS_HEADER_SIZE);
@@ -1232,7 +1232,8 @@ static void raw_to_tiff(indigo_device *device, void *data_in, int frame_width, i
 		add_key(&next_key, false, "OFFSET  = %20.2f / Offset", CCD_OFFSET_ITEM->number.value);
 	if (!CCD_GAMMA_PROPERTY->hidden)
 		add_key(&next_key, false, "GAMMA   = %20.2f / Gamma", CCD_GAMMA_ITEM->number.value);
-	add_key(&next_key, false, "DATE-OBS= '%s' / UTC date that FITS file was created", date_time_end);
+	add_key(&next_key, false, "JD      = %20.8f / JD when exposure started", UT2JD(timer));
+	add_key(&next_key, false, "DATE-OBS= '%s' / UTC when exposure started", date_time_start);
 	add_key(&next_key, false, "INSTRUME= '%s'%*c / instrument name", device->name, (int)(19 - strlen(device->name)), ' ');
 	add_key(&next_key, false, "ROWORDER= 'TOP-DOWN'           / Image row order");
 	add_key(&next_key, false, "SWCREATE= 'INDIGO 2.0-%s'     / Capture software", INDIGO_BUILD);
@@ -1456,6 +1457,24 @@ static bool create_file_name(indigo_device *device, void *blob_value, long blob_
 		} else if (fs[1] == 'O') { // %O - offset
 			char buffer[15];
 			sprintf(buffer, "%.0f", CCD_OFFSET_ITEM->number.value);
+			strncpy(tmp, format, fs - format);
+			strcat(tmp, buffer);
+			strcat(tmp, fs + 2);
+			strcpy(format, tmp);
+		} else if (fs[1] == 'R') { // %R - resolution
+			char buffer[15];
+			sprintf(buffer, "%.0fx%.0f", CCD_FRAME_WIDTH_ITEM->number.value, CCD_FRAME_HEIGHT_ITEM->number.value);
+			strncpy(tmp, format, fs - format);
+			strcat(tmp, buffer);
+			strcat(tmp, fs + 2);
+			strcpy(format, tmp);
+		} else if (fs[1] == 'B') { // %B - binning
+			char buffer[15];
+			if (CCD_BIN_HORIZONTAL_ITEM->number.value == CCD_BIN_HORIZONTAL_ITEM->number.value) {
+				sprintf(buffer, "BIN%.0f", CCD_BIN_HORIZONTAL_ITEM->number.value);
+			} else {
+				sprintf(buffer, "BIN%.0fx%.0f", CCD_BIN_HORIZONTAL_ITEM->number.value, CCD_BIN_HORIZONTAL_ITEM->number.value);
+			}
 			strncpy(tmp, format, fs - format);
 			strcat(tmp, buffer);
 			strcat(tmp, fs + 2);
@@ -1731,7 +1750,8 @@ void indigo_process_image(indigo_device *device, void *data, int frame_width, in
 			add_key(&header, true,  "OFFSET  = %20.2f / Offset", CCD_OFFSET_ITEM->number.value);
 		if (!CCD_GAMMA_PROPERTY->hidden)
 			add_key(&header, true,  "GAMMA   = %20.2f / Gamma", CCD_GAMMA_ITEM->number.value);
-		add_key(&header, true,  "DATE-OBS= '%s' / UTC date that FITS file was created", date_time_end);
+		add_key(&header, true,  "JD      = %20.8f / JD when the FITS file was created", UT2JD(tv.tv_sec + tv.tv_usec / 1e6));
+		add_key(&header, true,  "DATE-OBS= '%s' / UTC when the FITS file was created", date_time_end);
 		add_key(&header, true,  "INSTRUME= '%s'%*c / instrument name", device->name, (int)(19 - strlen(device->name)), ' ');
 		add_key(&header, true,  "ROWORDER= 'TOP-DOWN'           / Image row order");
 		add_key(&header, true,  "SWCREATE= 'INDIGO 2.0-%s'     / Capture software", INDIGO_BUILD);
