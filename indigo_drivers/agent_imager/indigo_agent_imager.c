@@ -1708,8 +1708,11 @@ static bool autofocus_ucurve(indigo_device *device) {
 		indigo_send_message(device, "Error: No focus reached, did not converge");
 		focus_failed = true;
 	} else if (AGENT_IMAGER_STATS_FOCUS_DEVIATION_ITEM->number.value > 20) { /* for HFD 20% deviation is ok - tested on realsky */
-		indigo_send_message(device, "Error: Focus does not meet the quality criteria");
-		focus_failed = true;
+		char tmp[1024];
+		snprintf(tmp, 1024, "Warning: Focus does not meet the quality criteria, expected <= 20, got %lf", AGENT_IMAGER_STATS_FOCUS_DEVIATION_ITEM->number.value);
+		indigo_send_message(device, tmp);
+		// TODO: temporarily disabled
+		// focus_failed = true;
 	}
 	INDIGO_DRIVER_DEBUG(DRIVER_NAME, "UC: Focus deviation = %g %%", AGENT_IMAGER_STATS_FOCUS_DEVIATION_ITEM->number.value);
 
