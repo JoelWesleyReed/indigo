@@ -1702,15 +1702,20 @@ static bool autofocus_ucurve(indigo_device *device) {
 		AGENT_IMAGER_STATS_FOCUS_DEVIATION_ITEM->number.value = 100;
 	}
 
+	// TODO: remove these
+	indigo_send_message(device, "Quality stats: hfd: %lf, min-est: %lf, deviation: %lf", 
+		AGENT_IMAGER_STATS_HFD_ITEM->number.value,
+		min_est,
+		AGENT_IMAGER_STATS_FOCUS_DEVIATION_ITEM->number.value);
+	// ------
+
 	indigo_update_property(device, AGENT_IMAGER_STATS_PROPERTY, NULL);
 
 	if (AGENT_IMAGER_STATS_HFD_ITEM->number.value > 1.2 * AGENT_IMAGER_SELECTION_RADIUS_ITEM->number.value && DEVICE_PRIVATE_DATA->use_hfd_estimator) {
 		indigo_send_message(device, "Error: No focus reached, did not converge");
 		focus_failed = true;
 	} else if (AGENT_IMAGER_STATS_FOCUS_DEVIATION_ITEM->number.value > 20) { /* for HFD 20% deviation is ok - tested on realsky */
-		char tmp[1024];
-		snprintf(tmp, 1024, "Warning: Focus does not meet the quality criteria, expected <= 20, got %lf", AGENT_IMAGER_STATS_FOCUS_DEVIATION_ITEM->number.value);
-		indigo_send_message(device, tmp);
+		indigo_send_message(device, "Warning: Focus does not meet the quality criteria, expected <= 20, got %lf", AGENT_IMAGER_STATS_FOCUS_DEVIATION_ITEM->number.value);
 		// TODO: temporarily disabled
 		// focus_failed = true;
 	}
