@@ -1431,7 +1431,7 @@ static double reduce_ucurve_best_focus(double *best_focuses, int count) {
 
 static bool autofocus_ucurve(indigo_device *device) {
 	assert(DEVICE_PRIVATE_DATA->use_hfd_estimator);
-	double prev_quality[INDIGO_MAX_MULTISTAR_COUNT] = { 0 }, min_est = 1e10;
+	double prev_quality[INDIGO_MAX_MULTISTAR_COUNT] = { 0 }, min_est = 1e10, min_focus = 1e10;
 	double steps = AGENT_IMAGER_FOCUS_UCURVE_STEP_ITEM->number.value;
 	int current_offset = 0;
 	DEVICE_PRIVATE_DATA->ucurve_samples_number = (int)rint(AGENT_IMAGER_FOCUS_UCURVE_SAMPLES_ITEM->number.value);
@@ -1686,8 +1686,12 @@ static bool autofocus_ucurve(indigo_device *device) {
 		current_offset -= steps_to_focus;
 	}
 
-	if (!capture_and_process_frame(device, NULL)) {
-		return false;
+	for(int i=1; i<=AGENT_IMAGER_FOCUS_STACK_ITEM->number.value; i++) {
+		if (!capture_and_process_frame(device, NULL)) {
+			return false;
+		}
+		min_focus = (min_focus > AGENT_IMAGER_STATS_HFD_ITEM->number.value) ? AGENT_IMAGER_STATS_HFD_ITEM->number.value : min_focus;
+		indigo_send_message(device, "Stack frame %d best focus HFD %lf", i, min_focus);
 	}
 
 	if (AGENT_ABORT_PROCESS_PROPERTY->state == INDIGO_BUSY_STATE) {
@@ -1697,14 +1701,14 @@ static bool autofocus_ucurve(indigo_device *device) {
 
 	/* Calculate focus deviation from the optimal one */
 	if (min_est > 0) {
-		AGENT_IMAGER_STATS_FOCUS_DEVIATION_ITEM->number.value = 100 * (AGENT_IMAGER_STATS_HFD_ITEM->number.value - min_est) / AGENT_IMAGER_STATS_HFD_ITEM->number.value;
+		AGENT_IMAGER_STATS_FOCUS_DEVIATION_ITEM->number.value = 100 * (min_focus - min_est) / min_focus;
 	} else {
 		AGENT_IMAGER_STATS_FOCUS_DEVIATION_ITEM->number.value = 100;
 	}
 
 	// TODO: remove these
-	indigo_send_message(device, "Quality stats: hfd: %lf, min-est: %lf, deviation: %lf", 
-		AGENT_IMAGER_STATS_HFD_ITEM->number.value,
+	indigo_send_message(device, "Quality stats: min-focus: %lf, min-est: %lf, deviation: %lf", 
+		min_focus,
 		min_est,
 		AGENT_IMAGER_STATS_FOCUS_DEVIATION_ITEM->number.value);
 	// ------
