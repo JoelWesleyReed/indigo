@@ -162,15 +162,15 @@ static indigo_result focuser_attach(indigo_device *device) {
 
 static indigo_result focuser_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	if (IS_CONNECTED) {
-		if (indigo_property_match(X_FOCUSER_PARK_PROPERTY, property))
-			indigo_define_property(device, X_FOCUSER_PARK_PROPERTY, NULL);
+		indigo_define_matching_property(X_FOCUSER_PARK_PROPERTY);
 	}
 	return indigo_focuser_enumerate_properties(device, NULL, NULL);
 }
 
 static void focuser_timer_callback(indigo_device *device) {
-	if (!IS_CONNECTED)
+	if (!IS_CONNECTED) {
 		return;
+	}
 	char response[16];
 	pthread_mutex_lock(&PRIVATE_DATA->mutex);
 	if (prodigy_command(device, "T", response, sizeof(response))) {
@@ -546,15 +546,11 @@ static indigo_result aux_attach(indigo_device *device) {
 
 static indigo_result aux_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	if (IS_CONNECTED) {
-		if (indigo_property_match(AUX_POWER_OUTLET_PROPERTY, property))
-			indigo_define_property(device, AUX_POWER_OUTLET_PROPERTY, NULL);
-		if (indigo_property_match(AUX_USB_PORT_PROPERTY, property))
-			indigo_define_property(device, AUX_USB_PORT_PROPERTY, NULL);
-		if (indigo_property_match(X_AUX_REBOOT_PROPERTY, property))
-			indigo_define_property(device, X_AUX_REBOOT_PROPERTY, NULL);
+		indigo_define_matching_property(AUX_POWER_OUTLET_PROPERTY);
+		indigo_define_matching_property(AUX_USB_PORT_PROPERTY);
+		indigo_define_matching_property(X_AUX_REBOOT_PROPERTY);
 	}
-	if (indigo_property_match(AUX_OUTLET_NAMES_PROPERTY, property))
-		indigo_define_property(device, AUX_OUTLET_NAMES_PROPERTY, NULL);
+	indigo_define_matching_property(AUX_OUTLET_NAMES_PROPERTY);
 	return indigo_aux_enumerate_properties(device, NULL, NULL);
 }
 

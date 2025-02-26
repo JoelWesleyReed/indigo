@@ -269,30 +269,18 @@ static indigo_result aux_attach(indigo_device *device) {
 static indigo_result aux_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	assert(device != NULL);
 	if (IS_CONNECTED) {
-		if (indigo_property_match(JOYSTICK_BUTTONS_PROPERTY, property))
-			indigo_define_property(device, JOYSTICK_BUTTONS_PROPERTY, NULL);
-		if (indigo_property_match(JOYSTICK_AXES_PROPERTY, property))
-			indigo_define_property(device, JOYSTICK_AXES_PROPERTY, NULL);
-		if (indigo_property_match(JOYSTICK_MAPPING_PROPERTY, property))
-			indigo_define_property(device, JOYSTICK_MAPPING_PROPERTY, NULL);
-		if (indigo_property_match(JOYSTICK_OPTIONS_PROPERTY, property))
-			indigo_define_property(device, JOYSTICK_OPTIONS_PROPERTY, NULL);
-		if (indigo_property_match(MOUNT_PARK_PROPERTY, property))
-			indigo_define_property(device, MOUNT_PARK_PROPERTY, NULL);
-		if (indigo_property_match(MOUNT_HOME_PROPERTY, property))
-			indigo_define_property(device, MOUNT_HOME_PROPERTY, NULL);
-		if (indigo_property_match(MOUNT_SLEW_RATE_PROPERTY, property))
-			indigo_define_property(device, MOUNT_SLEW_RATE_PROPERTY, NULL);
-		if (indigo_property_match(MOUNT_MOTION_DEC_PROPERTY, property))
-			indigo_define_property(device, MOUNT_MOTION_DEC_PROPERTY, NULL);
-		if (indigo_property_match(MOUNT_MOTION_RA_PROPERTY, property))
-			indigo_define_property(device, MOUNT_MOTION_RA_PROPERTY, NULL);
-		if (indigo_property_match(MOUNT_TRACKING_PROPERTY, property))
-			indigo_define_property(device, MOUNT_TRACKING_PROPERTY, NULL);
-		if (indigo_property_match(MOUNT_ABORT_MOTION_PROPERTY, property))
-			indigo_define_property(device, MOUNT_ABORT_MOTION_PROPERTY, NULL);
-		if (indigo_property_match(FOCUSER_CONTROL_PROPERTY, property))
-			indigo_define_property(device, FOCUSER_CONTROL_PROPERTY, NULL);
+		indigo_define_matching_property(JOYSTICK_BUTTONS_PROPERTY);
+		indigo_define_matching_property(JOYSTICK_AXES_PROPERTY);
+		indigo_define_matching_property(JOYSTICK_MAPPING_PROPERTY);
+		indigo_define_matching_property(JOYSTICK_OPTIONS_PROPERTY);
+		indigo_define_matching_property(MOUNT_PARK_PROPERTY);
+		indigo_define_matching_property(MOUNT_HOME_PROPERTY);
+		indigo_define_matching_property(MOUNT_SLEW_RATE_PROPERTY);
+		indigo_define_matching_property(MOUNT_MOTION_DEC_PROPERTY);
+		indigo_define_matching_property(MOUNT_MOTION_RA_PROPERTY);
+		indigo_define_matching_property(MOUNT_TRACKING_PROPERTY);
+		indigo_define_matching_property(MOUNT_ABORT_MOTION_PROPERTY);
+		indigo_define_matching_property(FOCUSER_CONTROL_PROPERTY);
 	}
 	return indigo_aux_enumerate_properties(device, client, property);
 }
@@ -656,19 +644,21 @@ static NSMutableArray *wrappers = nil;
 		}
 		if (!found) {
 			DDHidJoystickWrapper *wrapper = [[DDHidJoystickWrapper alloc] init];
-
+			
 			int axis_count = 0;
 			int pov_count = 0;
 			if (joystick.countOfSticks > 0) {
 				DDHidJoystickStick *stick = [joystick objectInSticksAtIndex:0];
-				if (stick.xAxisElement)
+				if (stick.xAxisElement) {
 					axis_count++;
-				if (stick.yAxisElement)
+				}
+				if (stick.yAxisElement) {
 					axis_count++;
+				}
 				axis_count += stick.countOfStickElements;
 				pov_count = stick.countOfPovElements;
 			}
-
+			
 			wrapper->device = allocate_device([joystick.productName cStringUsingEncoding:NSASCIIStringEncoding], joystick.locationId, joystick.numberOfButtons, axis_count, pov_count);
 			wrapper->joystick = joystick;
 			wrapper->queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
@@ -862,8 +852,9 @@ static void rescan() {
 		int index = 0;
 		if (sscanf(dir->d_name, "js%d", &index) == 1) {
 			found[index] = true;
-			if (devices[index])
+			if (devices[index]) {
 				continue;
+			}
 			int joy_fd, axis_count=0, button_count=0;
 			char name[512];
 			memset(name, 0, sizeof(name));

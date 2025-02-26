@@ -233,7 +233,7 @@ static void gps_refresh_callback(indigo_device *device) {
 				if (!strcmp(tokens[5], "W"))
 					lon = -lon;
 				lon = round(lon * 10000) / 10000;
-				if (GPS_GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM->number.value != lon || GPS_GEOGRAPHIC_COORDINATES_LATITUDE_ITEM->number.value != lat ) {
+				if (GPS_GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM->number.value != lon || GPS_GEOGRAPHIC_COORDINATES_LATITUDE_ITEM->number.value != lat) {
 					GPS_GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM->number.value = lon;
 					GPS_GEOGRAPHIC_COORDINATES_LATITUDE_ITEM->number.value = lat;
 				}
@@ -414,8 +414,7 @@ static indigo_result gps_attach(indigo_device *device) {
 }
 
 static indigo_result gps_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
-	if (indigo_property_match(GPS_SELECTED_SYSTEM_PROPERTY, property))
-		indigo_define_property(device, GPS_SELECTED_SYSTEM_PROPERTY, NULL);
+	indigo_define_matching_property(GPS_SELECTED_SYSTEM_PROPERTY);
 
 	return indigo_gps_enumerate_properties(device, NULL, NULL);
 }

@@ -133,8 +133,9 @@ static void position_timer_callback(indigo_device *device) {
 	double ra, dec, lon, lat;
 	char side_of_pier = 0;
 	int dev_id = PRIVATE_DATA->dev_id;
-	if (dev_id < 0)
+	if (dev_id < 0) {
 		return;
+	}
 
 	if (!PRIVATE_DATA->guiding_in_progress) {
 		pthread_mutex_lock(&PRIVATE_DATA->serial_mutex);
@@ -258,8 +259,9 @@ static void position_timer_callback(indigo_device *device) {
 static void park_timer_callback(indigo_device *device) {
 	int res;
 	int dev_id = PRIVATE_DATA->dev_id;
-	if (dev_id < 0)
+	if (dev_id < 0) {
 		return;
+	}
 	pthread_mutex_lock(&PRIVATE_DATA->serial_mutex);
 	if (tc_goto_in_progress(dev_id)) {
 		MOUNT_PARK_PROPERTY->state = INDIGO_BUSY_STATE;
@@ -679,8 +681,9 @@ static void mount_handle_slew_rate(indigo_device *device) {
 static void mount_handle_motion_ns(indigo_device *device) {
 	int dev_id = PRIVATE_DATA->dev_id;
 	int res = RC_OK;
-	if (PRIVATE_DATA->slew_rate == 0)
+	if (PRIVATE_DATA->slew_rate == 0) {
 		mount_handle_slew_rate(device);
+	}
 	pthread_mutex_lock(&PRIVATE_DATA->serial_mutex);
 	if (MOUNT_MOTION_NORTH_ITEM->sw.value) {
 		res = tc_slew_fixed(dev_id, TC_AXIS_DE, TC_DIR_POSITIVE, PRIVATE_DATA->slew_rate);
@@ -703,10 +706,11 @@ static void mount_handle_motion_ns(indigo_device *device) {
 static void mount_handle_motion_ne(indigo_device *device) {
 	int dev_id = PRIVATE_DATA->dev_id;
 	int res = RC_OK;
-	if (PRIVATE_DATA->slew_rate == 0)
+	if (PRIVATE_DATA->slew_rate == 0) {
 		mount_handle_slew_rate(device);
+	}
 	pthread_mutex_lock(&PRIVATE_DATA->serial_mutex);
-	if(MOUNT_MOTION_EAST_ITEM->sw.value) {
+	if (MOUNT_MOTION_EAST_ITEM->sw.value) {
 		res = tc_slew_fixed(dev_id, TC_AXIS_RA, TC_DIR_POSITIVE, PRIVATE_DATA->slew_rate);
 		MOUNT_MOTION_RA_PROPERTY->state = INDIGO_BUSY_STATE;
 	} else if (MOUNT_MOTION_WEST_ITEM->sw.value) {
@@ -944,7 +948,7 @@ static indigo_result mount_change_property(indigo_device *device, indigo_client 
 		return INDIGO_OK;
 	} else if (indigo_property_match_changeable(MOUNT_MOTION_RA_PROPERTY, property)) {
 		// -------------------------------------------------------------------------------- MOUNT_MOTION_WE
-		if(PRIVATE_DATA->parked) {
+		if (PRIVATE_DATA->parked) {
 			MOUNT_MOTION_RA_PROPERTY->state = INDIGO_ALERT_STATE;
 			indigo_update_property(device, MOUNT_MOTION_RA_PROPERTY, WARN_PARKED_MSG);
 			return INDIGO_OK;
@@ -1143,8 +1147,7 @@ static void guider_handle_connect(indigo_device *device) {
 
 static indigo_result nexstar_guider_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	if (IS_CONNECTED) {
-		if (indigo_property_match(COMMAND_GUIDE_RATE_PROPERTY, property))
-			indigo_define_property(device, COMMAND_GUIDE_RATE_PROPERTY, NULL);
+		indigo_define_matching_property(COMMAND_GUIDE_RATE_PROPERTY);
 	}
 	return indigo_guider_enumerate_properties(device, NULL, NULL);
 }

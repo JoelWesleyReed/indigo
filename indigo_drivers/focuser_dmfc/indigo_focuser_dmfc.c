@@ -142,19 +142,17 @@ static indigo_result focuser_attach(indigo_device *device) {
 
 static indigo_result focuser_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	if (IS_CONNECTED) {
-		if (indigo_property_match(X_FOCUSER_MOTOR_TYPE_PROPERTY, property))
-			indigo_define_property(device, X_FOCUSER_MOTOR_TYPE_PROPERTY, NULL);
-		if (indigo_property_match(X_FOCUSER_ENCODER_PROPERTY, property))
-			indigo_define_property(device, X_FOCUSER_ENCODER_PROPERTY, NULL);
-		if (indigo_property_match(X_FOCUSER_LED_PROPERTY, property))
-			indigo_define_property(device, X_FOCUSER_LED_PROPERTY, NULL);
+		indigo_define_matching_property(X_FOCUSER_MOTOR_TYPE_PROPERTY);
+		indigo_define_matching_property(X_FOCUSER_ENCODER_PROPERTY);
+		indigo_define_matching_property(X_FOCUSER_LED_PROPERTY);
 	}
 	return indigo_focuser_enumerate_properties(device, NULL, NULL);
 }
 
 static void focuser_timer_callback(indigo_device *device) {
-	if (!IS_CONNECTED)
+	if (!IS_CONNECTED) {
 		return;
+	}
 	char response[16];
 	pthread_mutex_lock(&PRIVATE_DATA->mutex);
 	if (dmfc_command(device, "T", response, sizeof(response))) {

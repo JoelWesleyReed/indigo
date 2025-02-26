@@ -685,7 +685,7 @@ void mount_handle_motion_ra(indigo_device *device) {
 }
 
 void mount_handle_motion_dec(indigo_device *device) {
-	if(MOUNT_MOTION_NORTH_ITEM->sw.value) {
+	if (MOUNT_MOTION_NORTH_ITEM->sw.value) {
 		MOUNT_MOTION_DEC_PROPERTY->state = INDIGO_BUSY_STATE;
 		indigo_update_property(device, MOUNT_MOTION_DEC_PROPERTY, NULL);
 		MOUNT_EQUATORIAL_COORDINATES_PROPERTY->state = INDIGO_BUSY_STATE;
@@ -711,7 +711,7 @@ static void mount_park_timer_callback(indigo_device* device) {
 	synscan_wait_for_axis_stopped(device, kAxisRA, &PRIVATE_DATA->abort_motion);
 	PRIVATE_DATA->raAxisMode = kAxisModeIdle;
 	synscan_wait_for_axis_stopped(device, kAxisDEC, &PRIVATE_DATA->abort_motion);
-	PRIVATE_DATA->raAxisMode = kAxisModeIdle;
+	PRIVATE_DATA->decAxisMode = kAxisModeIdle;
 
 	//  Stop tracking if enabled
 	indigo_set_switch(MOUNT_TRACKING_PROPERTY, MOUNT_TRACKING_OFF_ITEM, true);
@@ -1067,8 +1067,9 @@ static void mount_autohome_timer_callback(indigo_device* device) {
 		INDIGO_DRIVER_DEBUG(DRIVER_NAME, "Wait RA home position index change");
 		while (true) {
 			synscan_ext_inquiry(device, kAxisRA, kGetHomeIndex, &value);
-			if (value != 0xFFFFFF)
+			if (value != 0xFFFFFF) {
 				break;
+			}
 		}
 		INDIGO_DRIVER_DEBUG(DRIVER_NAME, "Wait 3s");
 		indigo_usleep(3 * ONE_SECOND_DELAY);
@@ -1090,8 +1091,9 @@ static void mount_autohome_timer_callback(indigo_device* device) {
 		INDIGO_DRIVER_DEBUG(DRIVER_NAME, "Wait DEC home position index change");
 		while (true) {
 			synscan_ext_inquiry(device, kAxisDEC, kGetHomeIndex, &value);
-			if (value != 0xFFFFFF)
+			if (value != 0xFFFFFF) {
 				break;
+			}
 		}
 		INDIGO_DRIVER_DEBUG(DRIVER_NAME, "Wait 3s");
 		indigo_usleep(3 * ONE_SECOND_DELAY);

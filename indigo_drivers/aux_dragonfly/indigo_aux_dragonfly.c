@@ -354,17 +354,12 @@ static bool set_gpio_outlets(indigo_device *device) {
 
 static indigo_result aux_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	if (DEVICE_CONNECTED) {
-		if (indigo_property_match(AUX_GPIO_OUTLET_PROPERTY, property))
-			indigo_define_property(device, AUX_GPIO_OUTLET_PROPERTY, NULL);
-		if (indigo_property_match(AUX_OUTLET_PULSE_LENGTHS_PROPERTY, property))
-			indigo_define_property(device, AUX_OUTLET_PULSE_LENGTHS_PROPERTY, NULL);
-		if (indigo_property_match(AUX_GPIO_SENSORS_PROPERTY, property))
-			indigo_define_property(device, AUX_GPIO_SENSORS_PROPERTY, NULL);
+		indigo_define_matching_property(AUX_GPIO_OUTLET_PROPERTY);
+		indigo_define_matching_property(AUX_OUTLET_PULSE_LENGTHS_PROPERTY);
+		indigo_define_matching_property(AUX_GPIO_SENSORS_PROPERTY);
 	}
-	if (indigo_property_match(AUX_OUTLET_NAMES_PROPERTY, property))
-		indigo_define_property(device, AUX_OUTLET_NAMES_PROPERTY, NULL);
-	if (indigo_property_match(AUX_SENSOR_NAMES_PROPERTY, property))
-		indigo_define_property(device, AUX_SENSOR_NAMES_PROPERTY, NULL);
+	indigo_define_matching_property(AUX_OUTLET_NAMES_PROPERTY);
+	indigo_define_matching_property(AUX_SENSOR_NAMES_PROPERTY);
 
 	return indigo_aux_enumerate_properties(device, NULL, NULL);
 }
@@ -574,9 +569,15 @@ static void create_port_device(int p_device_index, int l_device_index) {
 		aux_detach
 	);
 
-	if (l_device_index >= MAX_LOGICAL_DEVICES) return;
-	if (p_device_index >= MAX_PHYSICAL_DEVICES) return;
-	if (device_data[p_device_index].device[l_device_index] != NULL) return;
+	if (l_device_index >= MAX_LOGICAL_DEVICES) {
+		return;
+	}
+	if (p_device_index >= MAX_PHYSICAL_DEVICES) {
+		return;
+	}
+	if (device_data[p_device_index].device[l_device_index] != NULL) {
+		return;
+	}
 
 	if (device_data[p_device_index].private_data == NULL) {
 		device_data[p_device_index].private_data = indigo_safe_malloc(sizeof(lunatico_private_data));
@@ -595,8 +596,12 @@ static void create_port_device(int p_device_index, int l_device_index) {
 
 
 static void delete_port_device(int p_device_index, int l_device_index) {
-	if (l_device_index >= MAX_LOGICAL_DEVICES) return;
-	if (p_device_index >= MAX_PHYSICAL_DEVICES) return;
+	if (l_device_index >= MAX_LOGICAL_DEVICES) {
+		return;
+	}
+	if (p_device_index >= MAX_PHYSICAL_DEVICES) {
+		return;
+	}
 
 	if (device_data[p_device_index].device[l_device_index] != NULL) {
 		indigo_detach_device(device_data[p_device_index].device[l_device_index]);
@@ -606,7 +611,9 @@ static void delete_port_device(int p_device_index, int l_device_index) {
 	}
 
 	for (int i = 0; i < MAX_LOGICAL_DEVICES; i++) {
-		if (device_data[p_device_index].device[i] != NULL) return;
+		if (device_data[p_device_index].device[i] != NULL) {
+			return;
+		}
 	}
 
 	if (device_data[p_device_index].private_data != NULL) {

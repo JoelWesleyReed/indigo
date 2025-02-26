@@ -587,36 +587,21 @@ static indigo_result focuser_attach(indigo_device *device) {
 
 static indigo_result focuser_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	if (IS_CONNECTED) {
-		if (indigo_property_match(X_STATE_PROPERTY, property))
-			indigo_define_property(device, X_STATE_PROPERTY, NULL);
-		if (indigo_property_match(X_CONFIG_PROPERTY, property))
-			indigo_define_property(device, X_CONFIG_PROPERTY, NULL);
-		if (indigo_property_match(X_LEDS_PROPERTY, property))
-			indigo_define_property(device, X_LEDS_PROPERTY, NULL);
-		if (indigo_property_match(X_WIFI_PROPERTY, property))
-			indigo_define_property(device, X_WIFI_PROPERTY, NULL);
-		if (indigo_property_match(X_WIFI_AP_PROPERTY, property))
-			indigo_define_property(device, X_WIFI_AP_PROPERTY, NULL);
-		if (indigo_property_match(X_WIFI_STA_PROPERTY, property))
-			indigo_define_property(device, X_WIFI_STA_PROPERTY, NULL);
-		if (indigo_property_match(X_RUNPRESET_L_PROPERTY, property))
-			indigo_define_property(device, X_RUNPRESET_L_PROPERTY, NULL);
-		if (indigo_property_match(X_RUNPRESET_M_PROPERTY, property))
-			indigo_define_property(device, X_RUNPRESET_M_PROPERTY, NULL);
-		if (indigo_property_match(X_RUNPRESET_S_PROPERTY, property))
-			indigo_define_property(device, X_RUNPRESET_S_PROPERTY, NULL);
-		if (indigo_property_match(X_RUNPRESET_1_PROPERTY, property))
-			indigo_define_property(device, X_RUNPRESET_1_PROPERTY, NULL);
-		if (indigo_property_match(X_RUNPRESET_2_PROPERTY, property))
-			indigo_define_property(device, X_RUNPRESET_2_PROPERTY, NULL);
-		if (indigo_property_match(X_RUNPRESET_3_PROPERTY, property))
-			indigo_define_property(device, X_RUNPRESET_3_PROPERTY, NULL);
-		if (indigo_property_match(X_RUNPRESET_PROPERTY, property))
-			indigo_define_property(device, X_RUNPRESET_PROPERTY, NULL);
-		if (indigo_property_match(X_HOLD_CURR_PROPERTY, property))
-			indigo_define_property(device, X_HOLD_CURR_PROPERTY, NULL);
-		if (indigo_property_match(X_CALIBRATE_F_PROPERTY, property))
-			indigo_define_property(device, X_CALIBRATE_F_PROPERTY, NULL);
+		indigo_define_matching_property(X_STATE_PROPERTY);
+		indigo_define_matching_property(X_CONFIG_PROPERTY);
+		indigo_define_matching_property(X_LEDS_PROPERTY);
+		indigo_define_matching_property(X_WIFI_PROPERTY);
+		indigo_define_matching_property(X_WIFI_AP_PROPERTY);
+		indigo_define_matching_property(X_WIFI_STA_PROPERTY);
+		indigo_define_matching_property(X_RUNPRESET_L_PROPERTY);
+		indigo_define_matching_property(X_RUNPRESET_M_PROPERTY);
+		indigo_define_matching_property(X_RUNPRESET_S_PROPERTY);
+		indigo_define_matching_property(X_RUNPRESET_1_PROPERTY);
+		indigo_define_matching_property(X_RUNPRESET_2_PROPERTY);
+		indigo_define_matching_property(X_RUNPRESET_3_PROPERTY);
+		indigo_define_matching_property(X_RUNPRESET_PROPERTY);
+		indigo_define_matching_property(X_HOLD_CURR_PROPERTY);
+		indigo_define_matching_property(X_CALIBRATE_F_PROPERTY);
 	}
 	return indigo_focuser_enumerate_properties(device, NULL, NULL);
 }
@@ -624,8 +609,9 @@ static indigo_result focuser_enumerate_properties(indigo_device *device, indigo_
 static void focuser_timer_callback(indigo_device *device) {
 	char response[1024];
 	jsmntok_t tokens[128];
-	if (!IS_CONNECTED)
+	if (!IS_CONNECTED) {
 		return;
+	}
 	if (primaluce_command(device, "{\"req\":{\"get\":{\"EXT_T\":\"\", \"VIN_12V\": \"\", \"MOT1\":{\"NTC_T\":\"\"}}}}", response, sizeof(response), tokens, 128)) {
 		double temp = get_number(response, tokens, GET_EXT_T);
 		if (temp != FOCUSER_TEMPERATURE_ITEM->number.value) {
@@ -710,7 +696,7 @@ static void focuser_connection_handler(indigo_device *device) {
 				if ((text = get_string(response, tokens, GET_MOT1_ERROR)) && *text) {
 					indigo_send_message(device, "ERROR: %s", text);
 				}
-				if ( get_number(response, tokens, GET_CALRESTART_MOT1)) {
+				if (get_number(response, tokens, GET_CALRESTART_MOT1)) {
 					indigo_send_message(device, "ERROR: %s needs calibration", INFO_DEVICE_MODEL_ITEM->text.value);
 				}
 				PRIVATE_DATA->has_abs_pos = getToken(response, tokens, 0, GET_MOT1_ABS_POS) != -1;
@@ -893,8 +879,9 @@ static void focuser_position_handler(indigo_device *device) {
 			FOCUSER_POSITION_ITEM->number.value = get_number(response, tokens, PRIVATE_DATA->has_abs_pos ? GET_MOT1_ABS_POS : GET_MOT1_ABS_POS_STEP);
 			indigo_update_property(device, FOCUSER_POSITION_PROPERTY, NULL);
 		}
-		if (FOCUSER_POSITION_ITEM->number.target == FOCUSER_POSITION_ITEM->number.value)
+		if (FOCUSER_POSITION_ITEM->number.target == FOCUSER_POSITION_ITEM->number.value) {
 			break;
+		}
 	}
 	FOCUSER_POSITION_PROPERTY->state = FOCUSER_STEPS_PROPERTY->state = INDIGO_OK_STATE;
 	indigo_update_property(device, FOCUSER_STEPS_PROPERTY, NULL);
@@ -1376,7 +1363,7 @@ static void rotator_connection_handler(indigo_device *device) {
 					if ((text = get_string(response, tokens, GET_MOT2_ERROR)) && *text) {
 						indigo_send_message(device, "ERROR: %s", text);
 					}
-					if ( get_number(response, tokens, GET_CALRESTART_MOT2)) {
+					if (get_number(response, tokens, GET_CALRESTART_MOT2)) {
 						indigo_send_message(device, "ERROR: ARCO needs calibration");
 					}
 				}
@@ -1442,8 +1429,9 @@ static void rotator_position_handler(indigo_device *device) {
 			ROTATOR_POSITION_ITEM->number.value = get_number(response, tokens, PRIVATE_DATA->has_abs_pos ? GET_MOT2_ABS_POS : GET_MOT2_ABS_POS_DEG);
 			indigo_update_property(device, ROTATOR_POSITION_PROPERTY, NULL);
 		}
-		if (ROTATOR_POSITION_ITEM->number.target == ROTATOR_POSITION_ITEM->number.value)
+		if (ROTATOR_POSITION_ITEM->number.target == ROTATOR_POSITION_ITEM->number.value) {
 			break;
+		}
 	}
 	ROTATOR_POSITION_PROPERTY->state = INDIGO_OK_STATE;
 	indigo_update_property(device, ROTATOR_POSITION_PROPERTY, NULL);

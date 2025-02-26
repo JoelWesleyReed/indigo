@@ -481,31 +481,19 @@ static indigo_result aux_attach(indigo_device *device) {
 
 static indigo_result aux_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	if (IS_CONNECTED) {
-		if (indigo_property_match(AUX_POWER_OUTLET_PROPERTY, property))
-			indigo_define_property(device, AUX_POWER_OUTLET_PROPERTY, NULL);
-		if (indigo_property_match(AUX_POWER_OUTLET_VOLTAGE_PROPERTY, property))
-			indigo_define_property(device, AUX_POWER_OUTLET_VOLTAGE_PROPERTY, NULL);
-		if (indigo_property_match(AUX_POWER_OUTLET_CURRENT_PROPERTY, property))
-			indigo_define_property(device, AUX_POWER_OUTLET_CURRENT_PROPERTY, NULL);
-		if (indigo_property_match(AUX_USB_PORT_PROPERTY, property))
-			indigo_define_property(device, AUX_USB_PORT_PROPERTY, NULL);
-		if (indigo_property_match(AUX_HEATER_OUTLET_PROPERTY, property))
-			indigo_define_property(device, AUX_HEATER_OUTLET_PROPERTY, NULL);
-		if (indigo_property_match(AUX_DEW_CONTROL_PROPERTY, property))
-			indigo_define_property(device, AUX_DEW_CONTROL_PROPERTY, NULL);
-		if (indigo_property_match(AUX_WEATHER_PROPERTY, property))
-			indigo_define_property(device, AUX_WEATHER_PROPERTY, NULL);
-		if (indigo_property_match(AUX_TEMPERATURE_SENSORS_PROPERTY, property))
-			indigo_define_property(device, AUX_TEMPERATURE_SENSORS_PROPERTY, NULL);
-		if (indigo_property_match(AUX_DEW_WARNING_PROPERTY, property))
-			indigo_define_property(device, AUX_DEW_WARNING_PROPERTY, NULL);
-		if (indigo_property_match(AUX_INFO_PROPERTY, property))
-			indigo_define_property(device, AUX_INFO_PROPERTY, NULL);
-		if (indigo_property_match(X_AUX_CALIBRATE_PROPERTY, property))
-			indigo_define_property(device, X_AUX_CALIBRATE_PROPERTY, NULL);
+		indigo_define_matching_property(AUX_POWER_OUTLET_PROPERTY);
+		indigo_define_matching_property(AUX_POWER_OUTLET_VOLTAGE_PROPERTY);
+		indigo_define_matching_property(AUX_POWER_OUTLET_CURRENT_PROPERTY);
+		indigo_define_matching_property(AUX_USB_PORT_PROPERTY);
+		indigo_define_matching_property(AUX_HEATER_OUTLET_PROPERTY);
+		indigo_define_matching_property(AUX_DEW_CONTROL_PROPERTY);
+		indigo_define_matching_property(AUX_WEATHER_PROPERTY);
+		indigo_define_matching_property(AUX_TEMPERATURE_SENSORS_PROPERTY);
+		indigo_define_matching_property(AUX_DEW_WARNING_PROPERTY);
+		indigo_define_matching_property(AUX_INFO_PROPERTY);
+		indigo_define_matching_property(X_AUX_CALIBRATE_PROPERTY);
 	}
-	if (indigo_property_match(AUX_OUTLET_NAMES_PROPERTY, property))
-		indigo_define_property(device, AUX_OUTLET_NAMES_PROPERTY, NULL);
+	indigo_define_matching_property(AUX_OUTLET_NAMES_PROPERTY);
 	return indigo_aux_enumerate_properties(device, NULL, NULL);
 }
 
@@ -515,7 +503,7 @@ static void aux_update_states(indigo_device *device) {
 		AUX_WEATHER_TEMPERATURE_ITEM->number.value = wb_stat.dht22_temperature;
 		AUX_WEATHER_HUMIDITY_ITEM->number.value = wb_stat.dht22_hunidity;
 		// calculate dew point
-		if(wb_stat.dht22_temperature > -100) {
+		if (wb_stat.dht22_temperature > -100) {
 			AUX_WEATHER_PROPERTY->state = INDIGO_OK_STATE;
 			AUX_WEATHER_DEWPOINT_ITEM->number.value = indigo_aux_dewpoint(wb_stat.dht22_temperature, wb_stat.dht22_hunidity);
 		} else {

@@ -80,8 +80,9 @@ static char *usbv3_response(indigo_device *device) {
 			pthread_mutex_unlock(&PRIVATE_DATA->port_mutex);
 			return "";
 		}
-		if (c == '\n')
+		if (c == '\n') {
 			continue;
+		}
 		if (c == '\r') {
 			break;
 		}
@@ -230,8 +231,7 @@ static indigo_result focuser_attach(indigo_device *device) {
 
 static indigo_result focuser_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	if (IS_CONNECTED) {
-		if (indigo_property_match(X_FOCUSER_STEP_SIZE_PROPERTY, property))
-			indigo_define_property(device, X_FOCUSER_STEP_SIZE_PROPERTY, NULL);
+		indigo_define_matching_property(X_FOCUSER_STEP_SIZE_PROPERTY);
 	}
 	return indigo_focuser_enumerate_properties(device, NULL, NULL);
 }
