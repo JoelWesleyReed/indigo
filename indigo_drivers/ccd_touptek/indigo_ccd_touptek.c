@@ -150,6 +150,22 @@
 #include <ogmacam.h>
 #include "../ccd_ogma/indigo_ccd_ogma.h"
 
+#elif defined(SVBONY)
+
+#define ENTRY_POINT						indigo_ccd_svb2
+#define CAMERA_NAME_PREFIX		"SvBony"
+#define DRIVER_LABEL					"SVBONY (OEM) Camera"
+#define DRIVER_NAME						"indigo_ccd_svb2"
+#define DRIVER_PRIVATE_DATA		svb2_private_data
+
+#define SDK_CALL(x)						Svbonycam_##x
+#define SDK_DEF(x)						SVBONYCAM_##x
+#define SDK_TYPE(x)						Svbonycam##x
+#define SDK_HANDLE						HSvbonycam
+
+#include <svbonycam.h>
+#include "../ccd_svb2/indigo_ccd_svb2.h"
+
 #else
 
 #define TOUPTEK
@@ -276,6 +292,10 @@ static bool get_blacklevel(indigo_device *device, int *blacklevel, double *scale
 	int pixel_format;
 	int blacklevel_raw;
 	int result = SDK_CALL(get_Option)(PRIVATE_DATA->handle, SDK_DEF(OPTION_PIXEL_FORMAT), &pixel_format);
+	if (result < 0) {
+		INDIGO_DRIVER_ERROR(DRIVER_NAME, "get_Option(OPTION_PIXEL_FORMAT, -> %d) = %d", pixel_format, result);
+		return false;
+	}
 	result = SDK_CALL(get_Option)(PRIVATE_DATA->handle, SDK_DEF(OPTION_BLACKLEVEL), &blacklevel_raw);
 	if (result < 0) {
 		INDIGO_DRIVER_ERROR(DRIVER_NAME, "get_Option(OPTION_BLACKLEVEL, -> %d) = %d", blacklevel_raw, result);
@@ -459,8 +479,9 @@ static void pull_callback(unsigned event, void* callbackCtx) {
 }
 
 static void ccd_temperature_callback(indigo_device *device) {
-	if (!CONNECTION_CONNECTED_ITEM->sw.value)
+	if (!CONNECTION_CONNECTED_ITEM->sw.value) {
 		return;
+	}
 	short temperature;
 	pthread_mutex_lock(&PRIVATE_DATA->mutex);
 	HRESULT result = SDK_CALL(get_Temperature)(PRIVATE_DATA->handle, &temperature);
@@ -1401,20 +1422,27 @@ static indigo_result ccd_detach(indigo_device *device) {
 		indigo_set_switch(CONNECTION_PROPERTY, CONNECTION_DISCONNECTED_ITEM, true);
 		ccd_connect_callback(device);
 	}
-	if (X_CCD_ADVANCED_PROPERTY)
+	if (X_CCD_ADVANCED_PROPERTY) {
 		indigo_release_property(X_CCD_ADVANCED_PROPERTY);
-	if (X_CCD_FAN_PROPERTY)
+	}
+	if (X_CCD_FAN_PROPERTY) {
 		indigo_release_property(X_CCD_FAN_PROPERTY);
-	if (X_CCD_HEATER_PROPERTY)
+	}
+	if (X_CCD_HEATER_PROPERTY) {
 		indigo_release_property(X_CCD_HEATER_PROPERTY);
-	if (X_CCD_CONVERSION_GAIN_PROPERTY)
+	}
+	if (X_CCD_CONVERSION_GAIN_PROPERTY) {
 		indigo_release_property(X_CCD_CONVERSION_GAIN_PROPERTY);
-	if (X_CCD_BIN_MODE_PROPERTY)
+	}
+	if (X_CCD_BIN_MODE_PROPERTY) {
 		indigo_release_property(X_CCD_BIN_MODE_PROPERTY);
-	if (X_CCD_LED_PROPERTY)
+	}
+	if (X_CCD_LED_PROPERTY) {
 		indigo_release_property(X_CCD_LED_PROPERTY);
-	if (device == device->master_device)
+	}
+	if (device == device->master_device) {
 		indigo_global_unlock(device);
+	}
 	INDIGO_DEVICE_DETACH_LOG(DRIVER_NAME, device->name);
 	return indigo_ccd_detach(device);
 }
@@ -1670,11 +1698,9 @@ static indigo_result wheel_attach(indigo_device *device) {
 
 static indigo_result wheel_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	assert(device != NULL);
-	if (indigo_property_match(X_WHEEL_MODEL_PROPERTY, property))
-		indigo_define_property(device, X_WHEEL_MODEL_PROPERTY, NULL);
+	indigo_define_matching_property(X_WHEEL_MODEL_PROPERTY);
 	if (IS_CONNECTED) {
-		if (indigo_property_match(X_CALIBRATE_PROPERTY, property))
-			indigo_define_property(device, X_CALIBRATE_PROPERTY, NULL);
+		indigo_define_matching_property(X_CALIBRATE_PROPERTY);
 	}
 	return indigo_wheel_enumerate_properties(device, client, property);
 }
@@ -1955,13 +1981,13 @@ static void temperature_timer_callback(indigo_device *device) {
 	pthread_mutex_lock(&PRIVATE_DATA->mutex);
 	res = (SDK_CALL(AAF)(PRIVATE_DATA->handle, SDK_DEF(AAF_GETAMBIENTTEMP), 0, &temp10));
 	if (FAILED(res)) {
-		if(has_sensor) {
+		if (has_sensor) {
 			INDIGO_DRIVER_LOG(DRIVER_NAME, "The temperature sensor is not connected (using internal sensor).");
 			indigo_update_property(device, FOCUSER_TEMPERATURE_PROPERTY, "The temperature sensor is not connected (using internal sensor).");
 		}
 		has_sensor = false;
 	} else {
-		if(!has_sensor) {
+		if (!has_sensor) {
 			INDIGO_DRIVER_LOG(DRIVER_NAME, "The temperature sensor connected.");
 			indigo_update_property(device, FOCUSER_TEMPERATURE_PROPERTY, "The temperature sensor connected.");
 		}
@@ -1999,8 +2025,7 @@ static void temperature_timer_callback(indigo_device *device) {
 
 static indigo_result focuser_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	if (IS_CONNECTED) {
-		if (indigo_property_match(X_BEEP_PROPERTY, property))
-			indigo_define_property(device, X_BEEP_PROPERTY, NULL);
+		indigo_define_matching_property(X_BEEP_PROPERTY);
 	}
 	return indigo_focuser_enumerate_properties(device, NULL, NULL);
 }
@@ -2682,8 +2707,9 @@ static void process_plug_event(indigo_device *unusued) {
 				free(guider);
 			}
 			indigo_detach_device(device);
-			if (device->private_data)
+			if (device->private_data) {
 				free(device->private_data);
+			}
 			free(device);
 			devices[i] = NULL;
 		}
@@ -2706,8 +2732,9 @@ static void remove_all_devices() {
 				free(guider);
 			}
 			indigo_detach_device(device);
-			if (device->private_data)
+			if (device->private_data) {
 				free(device->private_data);
+			}
 			free(device);
 			devices[i] = NULL;
 		}

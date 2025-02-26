@@ -130,10 +130,10 @@ static bool temma_open(indigo_device *device) {
 		}
 		cfsetispeed(&options,B9600);
 		cfsetospeed(&options,B9600);
-		options.c_cflag |= ( CS8 | PARENB | CRTSCTS );
-		options.c_cflag &= ( ~PARODD & ~CSTOPB );
-		cfsetispeed( &options, B19200 ) ;
-		cfsetospeed( &options, B19200 ) ;
+		options.c_cflag |= (CS8 | PARENB | CRTSCTS);
+		options.c_cflag &= (~PARODD & ~CSTOPB);
+		cfsetispeed(&options, B19200);
+		cfsetospeed(&options, B19200);
 		options.c_iflag = IGNBRK;
 		options.c_cc[VMIN] = 1;
 		options.c_cc[VTIME] = 5;
@@ -217,11 +217,11 @@ static bool temma_command(indigo_device *device, char *command, bool wait) {
 				sscanf(buffer + 1, "%02d%02d%02d", &d, &m, &s);
 				PRIVATE_DATA->currentRA = d + m / 60.0 + s / 3600.0;
 				sscanf(buffer + 8, "%02d%02d%01d", &d, &m, &s);
-				if(buffer[7] == '-')
+				if (buffer[7] == '-')
 					PRIVATE_DATA->currentDec = -(d + m / 60.0 + s / 600.0);
 				else
 					PRIVATE_DATA->currentDec = d + m / 60.0 + s / 600.0;
-				if ( buffer[13] == 'E' || buffer[13] == 'W' ) {
+				if (buffer[13] == 'E' || buffer[13] == 'W') {
 					// telescope side
 					bool changed = PRIVATE_DATA->telescopeSide == (buffer[13] == 'E' ? 'W' : 'E');
 					PRIVATE_DATA->telescopeSide = buffer[13];
@@ -231,7 +231,7 @@ static bool temma_command(indigo_device *device, char *command, bool wait) {
 						indigo_update_property(device, MOUNT_SIDE_OF_PIER_PROPERTY, NULL);
 					}
 				}
-				else if ( buffer[13] == 'F' ) {
+				else if (buffer[13] == 'F') {
 					// fulfilled
 				}
 				indigo_eq_to_j2k(MOUNT_EPOCH_ITEM->number.value, &PRIVATE_DATA->currentRA, &PRIVATE_DATA->currentDec);
@@ -392,12 +392,9 @@ static indigo_result mount_attach(indigo_device *device) {
 
 static indigo_result mount_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	if (IS_CONNECTED) {
-		if (indigo_property_match(CORRECTION_SPEED_PROPERTY, property))
-			indigo_define_property(device, CORRECTION_SPEED_PROPERTY, NULL);
-		if (indigo_property_match(HIGH_SPEED_PROPERTY, property))
-			indigo_define_property(device, HIGH_SPEED_PROPERTY, NULL);
-		if (indigo_property_match(ZENITH_PROPERTY, property))
-			indigo_define_property(device, ZENITH_PROPERTY, NULL);
+		indigo_define_matching_property(CORRECTION_SPEED_PROPERTY);
+		indigo_define_matching_property(HIGH_SPEED_PROPERTY);
+		indigo_define_matching_property(ZENITH_PROPERTY);
 	}
 	return indigo_mount_enumerate_properties(device, NULL, NULL);
 }

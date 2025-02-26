@@ -133,18 +133,12 @@ static indigo_result ccd_enumerate_properties(indigo_device *device, indigo_clie
 	assert(device != NULL);
 	assert(DEVICE_CONTEXT != NULL);
 	if (IS_CONNECTED) {
-		if (indigo_property_match(DSLR_DELETE_IMAGE_PROPERTY, property))
-			indigo_define_property(device, DSLR_DELETE_IMAGE_PROPERTY, NULL);
-		if (indigo_property_match(DSLR_MIRROR_LOCKUP_PROPERTY, property))
-			indigo_define_property(device, DSLR_MIRROR_LOCKUP_PROPERTY, NULL);
-		if (indigo_property_match(DSLR_ZOOM_PREVIEW_PROPERTY, property))
-			indigo_define_property(device, DSLR_ZOOM_PREVIEW_PROPERTY, NULL);
-		if (indigo_property_match(DSLR_LOCK_PROPERTY, property))
-			indigo_define_property(device, DSLR_LOCK_PROPERTY, NULL);
-		if (indigo_property_match(DSLR_AF_PROPERTY, property))
-			indigo_define_property(device, DSLR_AF_PROPERTY, NULL);
-		if (indigo_property_match(DSLR_SET_HOST_TIME_PROPERTY, property))
-			indigo_define_property(device, DSLR_SET_HOST_TIME_PROPERTY, NULL);
+		indigo_define_matching_property(DSLR_DELETE_IMAGE_PROPERTY);
+		indigo_define_matching_property(DSLR_MIRROR_LOCKUP_PROPERTY);
+		indigo_define_matching_property(DSLR_ZOOM_PREVIEW_PROPERTY);
+		indigo_define_matching_property(DSLR_LOCK_PROPERTY);
+		indigo_define_matching_property(DSLR_AF_PROPERTY);
+		indigo_define_matching_property(DSLR_SET_HOST_TIME_PROPERTY);
 		for (int i = 0; PRIVATE_DATA->info_properties_supported[i]; i++)
 			if (indigo_property_match(PRIVATE_DATA->properties[i].property, property))
 				indigo_define_property(device, PRIVATE_DATA->properties[i].property, NULL);
@@ -199,8 +193,9 @@ static void handle_connection(indigo_device *device) {
 				indigo_define_property(device, DSLR_SET_HOST_TIME_PROPERTY, NULL);
 				for (int i = 0; PRIVATE_DATA->info_properties_supported[i]; i++)
 					indigo_define_property(device, PRIVATE_DATA->properties[i].property, NULL);
-				if (PRIVATE_DATA->focuser)
+				if (PRIVATE_DATA->focuser) {
 					indigo_attach_device(PRIVATE_DATA->focuser);
+				}
 			} else {
 				for (int i = 0; PRIVATE_DATA->properties[i].property; i++)
 					indigo_release_property(PRIVATE_DATA->properties[i].property);
@@ -729,8 +724,9 @@ static indigo_device *attach_device(int vendor, int product, const char *usb_pat
 					indigo_detach_device(device);
 					free(device);
 					devices[j] = NULL;
-					if (private_data->vendor_private_data)
+					if (private_data->vendor_private_data) {
 						free(private_data->vendor_private_data);
+					}
 					free(private_data);
 				}
 			}
@@ -776,8 +772,9 @@ static void process_unplug_event(libusb_device *dev) {
 				devices[j] = NULL;
 				free(device);
 				libusb_unref_device(dev);
-				if (private_data->vendor_private_data)
+				if (private_data->vendor_private_data) {
 					free(private_data->vendor_private_data);
+				}
 				free(private_data);
 				break;
 			}

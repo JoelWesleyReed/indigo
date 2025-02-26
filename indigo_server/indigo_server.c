@@ -198,6 +198,9 @@
 #include "focuser_fc3/indigo_focuser_fc3.h"
 #include "focuser_lacerta/indigo_focuser_lacerta.h"
 #include "ccd_pentax/indigo_ccd_pentax.h"
+#include "rotator_asi/indigo_rotator_asi.h"
+#include "focuser_astroasis/indigo_focuser_astroasis.h"
+#include "wheel_astroasis/indigo_wheel_astroasis.h"
 #ifndef __aarch64__
 #include "ccd_sbig/indigo_ccd_sbig.h"
 #endif
@@ -297,6 +300,7 @@ driver_entry_point static_drivers[] = {
 	indigo_dome_skyroof,
 	indigo_dome_talon6ror,
 	indigo_focuser_asi,
+	indigo_focuser_astroasis,
 	indigo_focuser_astromechanics,
 	indigo_focuser_dmfc,
 	indigo_focuser_dsd,
@@ -345,11 +349,13 @@ driver_entry_point static_drivers[] = {
 	indigo_mount_starbook,
 	indigo_mount_synscan,
 	indigo_mount_temma,
+	indigo_rotator_asi,
 	indigo_rotator_falcon,
 	indigo_rotator_lunatico,
 	indigo_rotator_optec,
 	indigo_rotator_simulator,
 	indigo_wheel_asi,
+	indigo_wheel_astroasis,
 	indigo_wheel_atik,
 	indigo_wheel_fli,
 	indigo_wheel_indigo,
@@ -369,7 +375,9 @@ driver_entry_point static_drivers[] = {
 static struct {
 	char *name;
 	char *description;
-} dynamic_drivers[INDIGO_MAX_DRIVERS] = {
+}
+
+dynamic_drivers[INDIGO_MAX_DRIVERS] = {
 	NULL
 };
 
@@ -1481,6 +1489,7 @@ static void add_drivers(const char *folder) {
 								}
 								if (token) {
 									for (int i = 0; i < dynamic_drivers_count; i++) {
+										//indigo_error("dynamic_drivers[%d].name = %s", i, dynamic_drivers[i].name);
 										if (!strcmp(dynamic_drivers[i].name, token)) {
 											token = NULL;
 											break;

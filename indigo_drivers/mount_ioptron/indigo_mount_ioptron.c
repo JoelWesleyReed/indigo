@@ -105,8 +105,9 @@ static bool ieq_command(indigo_device *device, char *command, char *response, in
 		FD_ZERO(&readout);
 		FD_SET(PRIVATE_DATA->handle, &readout);
 		long result = select(PRIVATE_DATA->handle+1, &readout, NULL, NULL, &tv);
-		if (result == 0)
+		if (result == 0) {
 			break;
+		}
 		if (result < 0) {
 			pthread_mutex_unlock(&PRIVATE_DATA->port_mutex);
 			return false;
@@ -130,18 +131,18 @@ static bool ieq_command(indigo_device *device, char *command, char *response, in
 			FD_ZERO(&readout);
 			FD_SET(PRIVATE_DATA->handle, &readout);
 			long result = select(PRIVATE_DATA->handle+1, &readout, NULL, NULL, &tv);
-			if (result <= 0)
+			if (result <= 0) {
 				break;
+			}
 			result = read(PRIVATE_DATA->handle, &c, 1);
 			if (result < 1) {
 				INDIGO_DRIVER_ERROR(DRIVER_NAME, "Failed to read from %s -> %s (%d)", DEVICE_PORT_ITEM->text.value, strerror(errno), errno);
 				pthread_mutex_unlock(&PRIVATE_DATA->port_mutex);
 				return false;
 			}
-			if (c < 0)
-				c = ':';
-			if (c == '#')
+			if (c == '#') {
 				break;
+			}
 			response[index++] = c;
 		}
 		response[index] = 0;
@@ -926,7 +927,7 @@ static void mount_connect_callback(indigo_device *device) {
 						strcat(MOUNT_INFO_FIRMWARE_ITEM->text.value, "/");
 						strcat(MOUNT_INFO_FIRMWARE_ITEM->text.value, response);
 					}
-					if ( PRIVATE_DATA->protocol == 0x0300 && product == 26 ) {
+					if (PRIVATE_DATA->protocol == 0x0300 && product == 26) {
 						// "0026" has been reassigned in v3.10
 						strcpy(MOUNT_INFO_MODEL_ITEM->text.value, "CEM26");
 					}
@@ -961,7 +962,7 @@ static void mount_connect_callback(indigo_device *device) {
 				PRIVATE_DATA->no_park = false;
 				PRIVATE_DATA->protocol = 0x0300;
 			}
-			INDIGO_DRIVER_LOG(DRIVER_NAME, "Product:  %s (%s), firmware %s, protocol %d.%d %s", MOUNT_INFO_MODEL_ITEM->text.value, PRIVATE_DATA->product, MOUNT_INFO_FIRMWARE_ITEM->text.value, PRIVATE_DATA->protocol >> 8, PRIVATE_DATA->protocol & 0xFF, PRIVATE_DATA->hc8406 ? "HC8406" : (PRIVATE_DATA->hc8407 ? "HC8407" : "" ));
+			INDIGO_DRIVER_LOG(DRIVER_NAME, "Product:  %s (%s), firmware %s, protocol %d.%d %s", MOUNT_INFO_MODEL_ITEM->text.value, PRIVATE_DATA->product, MOUNT_INFO_FIRMWARE_ITEM->text.value, PRIVATE_DATA->protocol >> 8, PRIVATE_DATA->protocol & 0xFF, PRIVATE_DATA->hc8406 ? "HC8406" : (PRIVATE_DATA->hc8407 ? "HC8407" : ""));
 			if (PRIVATE_DATA->hc8406) {
 				MOUNT_PARK_PROPERTY->hidden = true;
 				MOUNT_TRACKING_PROPERTY->hidden = true;

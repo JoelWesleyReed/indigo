@@ -157,8 +157,9 @@ static bool dsd_command(indigo_device *device, const char *command, char *respon
 		tv.tv_sec = 0;
 		tv.tv_usec = 100000;
 		long result = select(PRIVATE_DATA->handle+1, &readout, NULL, NULL, &tv);
-		if (result == 0)
+		if (result == 0) {
 			break;
+		}
 		if (result < 0) {
 			pthread_mutex_unlock(&PRIVATE_DATA->port_mutex);
 			return false;
@@ -171,8 +172,9 @@ static bool dsd_command(indigo_device *device, const char *command, char *respon
 	}
 	// write command
 	indigo_write(PRIVATE_DATA->handle, command, strlen(command));
-	if (sleep > 0)
+	if (sleep > 0) {
 		usleep(sleep);
+	}
 
 	// read responce
 	if (response != NULL) {
@@ -186,8 +188,9 @@ static bool dsd_command(indigo_device *device, const char *command, char *respon
 			tv.tv_usec = 100000;
 			timeout = 0;
 			long result = select(PRIVATE_DATA->handle+1, &readout, NULL, NULL, &tv);
-			if (result <= 0)
+			if (result <= 0) {
 				break;
+			}
 			result = read(PRIVATE_DATA->handle, &c, 1);
 			if (result < 1) {
 				pthread_mutex_unlock(&PRIVATE_DATA->port_mutex);
@@ -208,7 +211,7 @@ static bool dsd_command(indigo_device *device, const char *command, char *respon
 
 
 static bool dsd_get_info(indigo_device *device, char *board, char *firmware) {
-	if(!board || !firmware) return false;
+	if (!board || !firmware) return false;
 
 	char response[DSD_CMD_LEN]={0};
 	if (dsd_command(device, "[GFRM]", response, sizeof(response), 100)) {
@@ -242,9 +245,9 @@ static bool dsd_command_set_value(indigo_device *device, const char *command, ui
 	char response[DSD_CMD_LEN];
 
 	snprintf(command_string, DSD_CMD_LEN, command, value);
-	if(!dsd_command(device, command_string, response, sizeof(response), 100)) return false;
+	if (!dsd_command(device, command_string, response, sizeof(response), 100)) return false;
 
-	if(strcmp(response, "(OK)") == 0) {
+	if (strcmp(response, "(OK)") == 0) {
 		return true;
 	}
 	return false;
@@ -266,9 +269,9 @@ static bool dsd_set_reverse(indigo_device *device, bool enabled) {
 	char response[DSD_CMD_LEN];
 
 	snprintf(command, DSD_CMD_LEN, "[SREV%01d]", enabled ? 1 : 0);
-	if(!dsd_command(device, command, response, sizeof(response), 100)) return false;
+	if (!dsd_command(device, command, response, sizeof(response), 100)) return false;
 
-	if(strcmp(response, "(OK)") == 0) {
+	if (strcmp(response, "(OK)") == 0) {
 		return true;
 	}
 	return false;
@@ -289,7 +292,7 @@ static bool dsd_goto_position(indigo_device *device, uint32_t position) {
 	// Set Position First
 	if (!dsd_command(device, command, response, sizeof(response), 100)) return false;
 
-	if(strcmp(response, "!101)") == 0) {
+	if (strcmp(response, "!101)") == 0) {
 		INDIGO_DRIVER_ERROR(DRIVER_NAME, "Move failed");
 		return false;
 	}
@@ -596,14 +599,10 @@ static void compensate_focus(indigo_device *device, double new_temp) {
 
 static indigo_result dsd_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	if (IS_CONNECTED) {
-		if (indigo_property_match(DSD_STEP_MODE_PROPERTY, property))
-			indigo_define_property(device, DSD_STEP_MODE_PROPERTY, NULL);
-		if (indigo_property_match(DSD_COILS_MODE_PROPERTY, property))
-			indigo_define_property(device, DSD_COILS_MODE_PROPERTY, NULL);
-		if (indigo_property_match(DSD_CURRENT_CONTROL_PROPERTY, property))
-			indigo_define_property(device, DSD_CURRENT_CONTROL_PROPERTY, NULL);
-		if (indigo_property_match(DSD_TIMINGS_PROPERTY, property))
-			indigo_define_property(device, DSD_TIMINGS_PROPERTY, NULL);
+		indigo_define_matching_property(DSD_STEP_MODE_PROPERTY);
+		indigo_define_matching_property(DSD_COILS_MODE_PROPERTY);
+		indigo_define_matching_property(DSD_CURRENT_CONTROL_PROPERTY);
+		indigo_define_matching_property(DSD_TIMINGS_PROPERTY);
 	}
 	indigo_define_property(device, DSD_MODEL_HINT_PROPERTY, NULL);
 	return indigo_focuser_enumerate_properties(device, NULL, NULL);
@@ -790,7 +789,7 @@ static void focuser_connect_callback(indigo_device *device) {
 					indigo_network_protocol proto = INDIGO_PROTOCOL_TCP;
 					PRIVATE_DATA->handle = indigo_open_network_device(name, 8080, &proto);
 				}
-				if ( PRIVATE_DATA->handle < 0) {
+				if (PRIVATE_DATA->handle < 0) {
 					INDIGO_DRIVER_ERROR(DRIVER_NAME, "Opening device %s: failed", DEVICE_PORT_ITEM->text.value);
 					CONNECTION_PROPERTY->state = INDIGO_ALERT_STATE;
 					indigo_set_switch(CONNECTION_PROPERTY, CONNECTION_DISCONNECTED_ITEM, true);
@@ -1028,7 +1027,7 @@ static indigo_result focuser_change_property(indigo_device *device, indigo_clien
 			} else { /* RESET CURRENT POSITION */
 				FOCUSER_POSITION_PROPERTY->state = INDIGO_OK_STATE;
 				FOCUSER_STEPS_PROPERTY->state = INDIGO_OK_STATE;
-				if(!dsd_sync_position(device, PRIVATE_DATA->target_position)) {
+				if (!dsd_sync_position(device, PRIVATE_DATA->target_position)) {
 					INDIGO_DRIVER_ERROR(DRIVER_NAME, "dsd_sync_position(%d, %d) failed", PRIVATE_DATA->handle, PRIVATE_DATA->target_position);
 					FOCUSER_POSITION_PROPERTY->state = INDIGO_ALERT_STATE;
 					FOCUSER_STEPS_PROPERTY->state = INDIGO_ALERT_STATE;
@@ -1158,23 +1157,23 @@ static indigo_result focuser_change_property(indigo_device *device, indigo_clien
 		indigo_property_copy_values(DSD_STEP_MODE_PROPERTY, property, false);
 		DSD_STEP_MODE_PROPERTY->state = INDIGO_OK_STATE;
 		stepmode_t mode = STEP_MODE_FULL;
-		if(DSD_STEP_MODE_FULL_ITEM->sw.value) {
+		if (DSD_STEP_MODE_FULL_ITEM->sw.value) {
 			mode = STEP_MODE_FULL;
-		} else if(DSD_STEP_MODE_HALF_ITEM->sw.value) {
+		} else if (DSD_STEP_MODE_HALF_ITEM->sw.value) {
 			mode = STEP_MODE_HALF;
-		} else if(DSD_STEP_MODE_FOURTH_ITEM->sw.value) {
+		} else if (DSD_STEP_MODE_FOURTH_ITEM->sw.value) {
 			mode = STEP_MODE_FOURTH;
-		} else if(DSD_STEP_MODE_EIGTH_ITEM->sw.value) {
+		} else if (DSD_STEP_MODE_EIGTH_ITEM->sw.value) {
 			mode = STEP_MODE_EIGTH;
-		} else if(DSD_STEP_MODE_16TH_ITEM->sw.value) {
+		} else if (DSD_STEP_MODE_16TH_ITEM->sw.value) {
 			mode = STEP_MODE_16TH;
-		} else if(DSD_STEP_MODE_32TH_ITEM->sw.value) {
+		} else if (DSD_STEP_MODE_32TH_ITEM->sw.value) {
 			mode = STEP_MODE_32TH;
-		} else if(DSD_STEP_MODE_64TH_ITEM->sw.value) {
+		} else if (DSD_STEP_MODE_64TH_ITEM->sw.value) {
 			mode = STEP_MODE_64TH;
-		} else if(DSD_STEP_MODE_128TH_ITEM->sw.value) {
+		} else if (DSD_STEP_MODE_128TH_ITEM->sw.value) {
 			mode = STEP_MODE_128TH;
-		} else if(DSD_STEP_MODE_256TH_ITEM->sw.value) {
+		} else if (DSD_STEP_MODE_256TH_ITEM->sw.value) {
 			mode = STEP_MODE_256TH;
 		}
 		if (!dsd_set_step_mode(device, mode)) {
@@ -1278,11 +1277,11 @@ static indigo_result focuser_change_property(indigo_device *device, indigo_clien
 		indigo_property_copy_values(DSD_COILS_MODE_PROPERTY, property, false);
 		DSD_COILS_MODE_PROPERTY->state = INDIGO_OK_STATE;
 		coilsmode_t mode = COILS_MODE_IDLE_OFF;
-		if(DSD_COILS_MODE_IDLE_OFF_ITEM->sw.value) {
+		if (DSD_COILS_MODE_IDLE_OFF_ITEM->sw.value) {
 			mode = COILS_MODE_IDLE_OFF;
-		} else if(DSD_COILS_MODE_ALWAYS_ON_ITEM->sw.value) {
+		} else if (DSD_COILS_MODE_ALWAYS_ON_ITEM->sw.value) {
 			mode = COILS_MODE_ALWAYS_ON;
-		} else if(DSD_COILS_MODE_TIMEOUT_ITEM->sw.value) {
+		} else if (DSD_COILS_MODE_TIMEOUT_ITEM->sw.value) {
 			mode = COILS_MODE_IDLE_TIMEOUT;
 		}
 		if (!dsd_set_coils_mode(device, mode)) {

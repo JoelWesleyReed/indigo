@@ -329,7 +329,7 @@ static void ptp_fuji_get_event(indigo_device *device) {
 	for (int i = 0; FUJI_CHECK_PROPERTIES[i]; i++) {
 		uint16_t code = FUJI_CHECK_PROPERTIES[i];
 		ptp_property *prop = ptp_property_supported(device, FUJI_CHECK_PROPERTIES[i]);
-		if ( ! prop ) {
+		if (! prop) {
 			continue;
 		}
 		if (ptp_transaction_1_0_i(device, ptp_operation_GetDevicePropValue, code, &buffer, &size)) {
@@ -387,8 +387,9 @@ static void ptp_fuji_get_event(indigo_device *device) {
 								}
 							} else {
 								indigo_process_dslr_image(device, image_buffer, image_size, ext, false);
-								if (PRIVATE_DATA->image_buffer)
+								if (PRIVATE_DATA->image_buffer) {
 									free(PRIVATE_DATA->image_buffer);
+								}
 								PRIVATE_DATA->image_buffer = image_buffer;
 								image_buffer = NULL;
 							}
@@ -725,8 +726,9 @@ bool ptp_fuji_liveview(indigo_device *device) {
 					indigo_update_property(device, CCD_IMAGE_PROPERTY, NULL);
 				}
 				indigo_process_dslr_image(device, buffer, size, ".jpeg", true);
-				if (PRIVATE_DATA->image_buffer)
+				if (PRIVATE_DATA->image_buffer) {
 					free(PRIVATE_DATA->image_buffer);
+				}
 				PRIVATE_DATA->image_buffer = buffer;
 				buffer = NULL;
 				ptp_transaction_1_0(device, ptp_operation_DeleteObject, handle);

@@ -2,6 +2,157 @@
 
 All notable changes to INDIGO framework will be documented in this file.
 
+# [2.0-318] - 22 Feb Sat 2025
+## Overall:
+- indigo_bus:
+	- fixed regression related to blob upload
+	- fix leaking uploaded blobs
+
+## Driver Fixes:
+- indigo_mount_synscan:
+	- fix axis state at park
+
+- indigo_mount_lx200:
+	- driver checks geo coordinates and updates them if changed from external source like GPS Web inerface or HC
+
+# [2.0-316] - 21 Feb Fri 2025
+
+- indigo_mount_synscan:
+	- Revert custom RA and Dec tracking - users repored multiple crashes and erratic guiding
+
+- indigo_mount_lx200:
+	- OnStep handshake fixed - often first command after powerup fails.
+
+- indigo_ccd_svb2:
+	- driver included in the distribution
+
+# [2.0-314] - 18 Feb Tue 2025
+## Overall:
+- indigo_ccd_driver:
+	- fix Jpeg quality step
+
+- race fixed in cancel timer
+
+- fix memory leak related to large text properties
+
+## New Drivers:
+
+- indigo_ccd_svb2:
+	- SVBONY OEM Camera driver produced by Touptek
+
+## Driver Fixes:
+- indigo_agent_scripting:
+	- do not add new scripts to execute on load by default
+
+	- Sequencer.js:
+		- make select_image_format(), select_frame_type(), select_camera_mode() and select_filter() accept both label and item name and remove _by_label() versions
+
+		- make select_program(), select_aperture(), select_shutter() and select_iso() accept both label and item name and remove _by_label() versions
+
+		- fix loop counting
+
+- indigo_ccd_toupcam & oem:
+	- SDK updated to version 57.27650.20250209
+
+- indigo_mount_lx200:
+	- do not mix home and park commands - it confuses some firmwares
+	- Implement OnStep switch and analog AUX outputs
+	- JTW GTR Manticore (OnStep) mount uses 230400 bps
+
+- indigo_ccd_qhy2:
+	- SDK updated to version 24.12.26
+
+- indigo_ccd_ptp:
+	- handle insufficient USB permissions gracefully
+
+# [2.0-312] - 03 Feb Mon 2025
+## Overall:
+- indigo_property_copy_values() for BLOBs fixed
+
+- fix several potential leaks and memry management errors
+
+- indigo_raw_utils: fix division by zero
+
+- code cleanup and silence many warnings
+
+- DSO catalogue cleanup
+
+- if-match-define pattern replaced with indigo_define_matching_property()
+
+- indigo_ccd_driver:
+	- added CCD_LOCAL_MODE.OBJECT
+	- added object name placeholder (%o) to the filename pattern
+
+- indigo_docs: update CCD_DRIVER_SAVED_IMAGES.md
+
+## Driver fixes:
+- agent_imager:
+	- AGENT_IMAGER_CAPTURE property added to prevent deadlock with platesolvers
+
+- indigo_agent_scripting:
+	- Sequencer.js: add select_frame_type_by_label()
+	- Sequencer.js: add select_camera_mode_by_label()
+	- Sequencer.js: add select_image_format_by_label()
+	- Sequencer.js: add select_filter_by_label()
+	- Sequencer.js: add select_iso_by_label()
+	- Sequencer.js: add select_aperture_by_label()
+	- Sequencer.js: add select_shutter_by_label()
+	- Sequencer.js: add select_program_by_label()
+	- Sequencer.js: failure() fixed to send the provided message
+	- Sequencer.js: make name_template optional for capture_batch() and capture_stream()
+	- Sequencer.js: add set_file_template()
+	-  equencer.js: add set_object_name()
+	- Sequencer.js: fix current/total exposure time calculation
+	- Sequencer.js: SEQUENCE_RESET resets SEQUENCE_STATE state to Ok
+	- Sequencer.js: obsolete start_guiding_exposure() - added optional exposure paramter to start_guiding()
+	- Sequencer.js: obsolete calibrate_guiding_exposure() - added optional exposure paramter to calibrate_guiding()
+	- Sequencer.js: proeprty label changes
+
+- indigo_agent_astrometry & indigo_agent_astap:
+	- add AGENT_PLATESOLVER_MOUNT_SETTLE_TIME property
+	- mirrored image BLOB added
+	- Guider agent can be image source again (fixed regression)
+	- related agents handling cleanup
+
+- indigo_ccd_touptek & OEM:
+	- verify if pixel format retrieval was successful
+
+- indigo_ccd_asi:
+	- typo fixed
+
+- indigo_mount_lx200:
+	- use correct port 9999 for onstep tcp connection
+	- typo fixed
+
+- indigo_focuser_moonlite:
+	- typo fixed
+
+- indigo_guider_cgusbst4:
+	- typo fixed
+
+- indigo_mount_asi:
+	- code cleanup
+	- typo fixed
+
+- indigo_mount_ioptron:
+	- typo fixed
+
+- indigo_focuser_astroasis:
+	- typo fixed
+
+- indigo_rotator_asi:
+	- typo fixed
+
+- indigo_wheel_astroasis:
+	- typo fixed
+
+- indigo_aux_asiair:
+	- typo fixed
+
+- indigo_mount_synscan:
+	- Implement custom RA and Dec tracking
+	- code cleanup
+
 # [2.0-310] - 07 Jan Tue 2025
 ## Overall:
 - indigo_ccd driver: setting CCD_LOCAL_MODE with non-existent or non-writable folder raises alert

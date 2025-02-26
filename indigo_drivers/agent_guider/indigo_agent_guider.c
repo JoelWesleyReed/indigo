@@ -292,8 +292,9 @@ static void open_log(indigo_device *device) {
 	strncpy(DEVICE_PRIVATE_DATA->log_file_name, AGENT_GUIDER_LOG_DIR_ITEM->text.value, PATH_MAX);
 	int len = (int)strlen(DEVICE_PRIVATE_DATA->log_file_name);
 	strftime(DEVICE_PRIVATE_DATA->log_file_name + len, PATH_MAX - len, AGENT_GUIDER_LOG_TEMPLATE_ITEM->text.value, local);
-	if (DEVICE_PRIVATE_DATA->log_file > 0)
+	if (DEVICE_PRIVATE_DATA->log_file > 0) {
 		close(DEVICE_PRIVATE_DATA->log_file);
+	}
 	DEVICE_PRIVATE_DATA->log_file = open(DEVICE_PRIVATE_DATA->log_file_name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (DEVICE_PRIVATE_DATA->log_file == -1) {
 		indigo_send_message(device, "Failed to create guiding log file (%s)", strerror(errno));
@@ -347,8 +348,9 @@ static void write_log_record(indigo_device *device) {
 }
 
 static void close_log(indigo_device *device) {
-	if (DEVICE_PRIVATE_DATA->log_file > 0)
+	if (DEVICE_PRIVATE_DATA->log_file > 0) {
 		close(DEVICE_PRIVATE_DATA->log_file);
+	}
 	DEVICE_PRIVATE_DATA->log_file = -1;
 }
 
@@ -1661,8 +1663,9 @@ static bool guide(indigo_device *device) {
 				DEVICE_PRIVATE_DATA->rmse_count++;
 			} else {
 				DEVICE_PRIVATE_DATA->rmse_ra_sum = DEVICE_PRIVATE_DATA->rmse_dec_sum = DEVICE_PRIVATE_DATA->rmse_ra_s_sum = DEVICE_PRIVATE_DATA->rmse_dec_s_sum = 0;
-				if (DEVICE_PRIVATE_DATA->rmse_count < AGENT_GUIDER_SETTINGS_DITH_LIMIT_ITEM->number.value)
+				if (DEVICE_PRIVATE_DATA->rmse_count < AGENT_GUIDER_SETTINGS_DITH_LIMIT_ITEM->number.value) {
 					DEVICE_PRIVATE_DATA->rmse_count++;
+				}
 				int count = (int)DEVICE_PRIVATE_DATA->rmse_count;
 				if (count > MAX_STACK) {
 					count = MAX_STACK;
@@ -2082,38 +2085,22 @@ static indigo_result agent_device_attach(indigo_device *device) {
 static indigo_result agent_enumerate_properties(indigo_device *device, indigo_client *client, indigo_property *property) {
 	if (client != NULL && client == FILTER_DEVICE_CONTEXT->client)
 		return INDIGO_OK;
-	if (indigo_property_match(AGENT_GUIDER_DETECTION_MODE_PROPERTY, property))
-		indigo_define_property(device, AGENT_GUIDER_DETECTION_MODE_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_GUIDER_MOUNT_COORDINATES_PROPERTY, property))
-		indigo_define_property(device, AGENT_GUIDER_MOUNT_COORDINATES_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_GUIDER_SETTINGS_PROPERTY, property))
-		indigo_define_property(device, AGENT_GUIDER_SETTINGS_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_GUIDER_FLIP_REVERSES_DEC_PROPERTY, property))
-		indigo_define_property(device, AGENT_GUIDER_FLIP_REVERSES_DEC_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_GUIDER_STARS_PROPERTY, property))
-		indigo_define_property(device, AGENT_GUIDER_STARS_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_GUIDER_SELECTION_PROPERTY, property))
-		indigo_define_property(device, AGENT_GUIDER_SELECTION_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_GUIDER_STATS_PROPERTY, property))
-		indigo_define_property(device, AGENT_GUIDER_STATS_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_GUIDER_DEC_MODE_PROPERTY, property))
-		indigo_define_property(device, AGENT_GUIDER_DEC_MODE_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_GUIDER_APPLY_DEC_BACKLASH_PROPERTY, property))
-		indigo_define_property(device, AGENT_GUIDER_APPLY_DEC_BACKLASH_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_START_PROCESS_PROPERTY, property))
-		indigo_define_property(device, AGENT_START_PROCESS_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_ABORT_PROCESS_PROPERTY, property))
-		indigo_define_property(device, AGENT_ABORT_PROCESS_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_GUIDER_DITHERING_OFFSETS_PROPERTY, property))
-		indigo_define_property(device, AGENT_GUIDER_DITHERING_OFFSETS_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_GUIDER_DITHERING_STRATEGY_PROPERTY, property))
-		indigo_define_property(device, AGENT_GUIDER_DITHERING_STRATEGY_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_GUIDER_DITHER_PROPERTY, property))
-		indigo_define_property(device, AGENT_GUIDER_DITHER_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_GUIDER_LOG_PROPERTY, property))
-		indigo_define_property(device, AGENT_GUIDER_LOG_PROPERTY, NULL);
-	if (indigo_property_match(AGENT_PROCESS_FEATURES_PROPERTY, property))
-		indigo_define_property(device, AGENT_PROCESS_FEATURES_PROPERTY, NULL);
+	indigo_define_matching_property(AGENT_GUIDER_DETECTION_MODE_PROPERTY);
+	indigo_define_matching_property(AGENT_GUIDER_MOUNT_COORDINATES_PROPERTY);
+	indigo_define_matching_property(AGENT_GUIDER_SETTINGS_PROPERTY);
+	indigo_define_matching_property(AGENT_GUIDER_FLIP_REVERSES_DEC_PROPERTY);
+	indigo_define_matching_property(AGENT_GUIDER_STARS_PROPERTY);
+	indigo_define_matching_property(AGENT_GUIDER_SELECTION_PROPERTY);
+	indigo_define_matching_property(AGENT_GUIDER_STATS_PROPERTY);
+	indigo_define_matching_property(AGENT_GUIDER_DEC_MODE_PROPERTY);
+	indigo_define_matching_property(AGENT_GUIDER_APPLY_DEC_BACKLASH_PROPERTY);
+	indigo_define_matching_property(AGENT_START_PROCESS_PROPERTY);
+	indigo_define_matching_property(AGENT_ABORT_PROCESS_PROPERTY);
+	indigo_define_matching_property(AGENT_GUIDER_DITHERING_OFFSETS_PROPERTY);
+	indigo_define_matching_property(AGENT_GUIDER_DITHERING_STRATEGY_PROPERTY);
+	indigo_define_matching_property(AGENT_GUIDER_DITHER_PROPERTY);
+	indigo_define_matching_property(AGENT_GUIDER_LOG_PROPERTY);
+	indigo_define_matching_property(AGENT_PROCESS_FEATURES_PROPERTY);
 	return indigo_filter_enumerate_properties(device, client, property);
 }
 
