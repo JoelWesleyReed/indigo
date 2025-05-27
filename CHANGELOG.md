@@ -2,6 +2,120 @@
 
 All notable changes to INDIGO framework will be documented in this file.
 
+# [2.0-332] - 22 May Thu 2025
+## Overall:
+- indigo_ccd_driver: focuser position in saved file name fixed
+- Rename DELTA_UTC_UT1 to DELTA_UT1_UTC
+- update DELTA_UT1_UTC constant as for 2025-05-22
+- indigo_platesolver: Polar Alignment works with +/-10degrees error but issues a warning if the intial error is too large
+
+## Driver Fixes:
+- indigo_agent_imager:
+	- clarify the message "No CCD is selected"
+
+- indigo_guider_imager:
+	- clarify the message "No CCD is selected"
+
+- indigo_agent_scripting:
+	- Sequencer.js: avoid a race condition with reseting the star selection process in imager and guider agents
+
+- indigo_ccd_ptp:
+	- support Nikon Z5II
+
+- indigo_ccd_atik:
+	- fix driver info and unload
+
+- indigo_ccd_svb:
+	- SDK updated to 1.13.4
+
+- indigo_ccd_mi:
+	- add support for C1+/C2-46000 cameras
+
+- indigo_focuser_qhy:
+	- fix relative move issue
+
+- indigo_rotator_falcon:
+	- add relative move
+	- fix initial position
+	- clear INFO_DEVICE_MODEL_ITEM, INFO_DEVICE_FW_REVISION_ITEM on disconnect
+	- more often checking if it reached the target
+
+- indigo_focuser_mypro2:
+	- fix occasional connection failure
+	- fix settle timeout
+	- fix relative move
+	- implement hardware backlash support
+	- Gemini focuser: show only supported step sizes
+
+
+# [2.0-330] - 01 May Thu 2025
+## Overall:
+- update DELTA_UTC_UT1 constant and add script to update it
+
+## Driver Fixes:
+- indigo_agent_scripting:
+	- Sequencer.js: enable/disable tracking
+	- Sequencer.js: set_verbose fixed in sequencer
+	- Sequencer.js: enable_tracking fixed in sequencer
+	- Sequencer.js: Error message fixed for non-existent label in set_switch
+	- Sequencer.js: allow missing non mandatory proeperty setting
+	- Sequencer.js: SEQUENCE_STATE.EXPOSURE changes with every AGENT_IMAGER_STATS in sequencer
+	- Sequencer.js: enable/disable filter offsets
+
+- indigo_agent_imager:
+	- implement filter offsets
+
+- indigo_agent_mount:
+	- add better rules for slaving dome to mount to avoid excessive dome motion
+
+- indigo_mount_synscan:
+	- resume tracking if it was on when slew is aborted
+
+# [2.0-328] - 18 Apr Fri 2025
+## Overall:
+- changed minimum requirement for debian bullseye
+- platesolver error handling fixed
+- AGENT_ABORT_PROCESS added to platesolvers, AGENT_PLATESOLVER_ABORT marked obsolete
+- Default absolute and relative position limits changed to 999999 for focusers
+
+## Driver Fixes:
+- indigo_agent_scripting:
+	- Sequencer.js: refactored
+	- Sequencer.js: add utc because both time stamp and date/time are UTC
+	- Sequencer.js: select devices by label not by item otherwise 'No camera', 'No focuser' etc, can not be selected
+	- Sequencer.js: select_xxx(device) finctions accept both item labels and items
+	- Sequencer.js: continue_on_failure() and abort_on_failure() added
+	- Sequencer.js: recovery point suport added
+	- Sequencer.js: SEQUENCE_STEP_STATE property added
+	- Sequencer.js: optionally resets content state before iteration
+	- Sequencer.js: handles start_guiding() state correctly
+	- Sequencer.js: delete/define race fixed in sequencer
+	- Sequencer.js: Symbolic constants for devices added in sequencer
+	- Sequencer.js: enable/disable warnings added to sequencer
+
+- indigo_agent_guider:
+	- fix randomized spiral division by zero if amount is 0
+
+- indigo_rotator_asi:
+	- add Apple/arm64 support
+	- fixes and cleanup
+
+- indigo_wheel_asi:
+	- code cleanup
+
+- indigo_focuser_asi:
+	- code cleanup
+
+- indigo_focuser_asi:
+	- code cleanup
+
+- indigo_ccd_ptp:
+	- add Nikon Z fc
+
+- indigo_ccd_playerone:
+	- updated SDK v.3.8.1
+
+
 # [2.0-326] - 02 Apr Wed 2025
 ## Overall:
 - indigo_raw_utis: indigo_equalize_bayer_channels() for subframe fixed

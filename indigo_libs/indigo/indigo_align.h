@@ -47,12 +47,15 @@ extern const double TWO_PI;
 extern const double DEG2RAD;
 extern const double RAD2DEG;
 
+#define PA_MAX_ERROR           10.0
+#define PA_MAX_INITIAL_ERROR   3.5
+
 //#define DELTA_T          (34 + 32.184 + 0.477677)
 #define JD2000           2451545.0
 
 #ifndef UT2JD
-#define DELTA_UTC_UT1    (-0.477677 / 86400.0)
-#define UT2JD(t)         ((t) / 86400.0 + 2440587.5 + DELTA_UTC_UT1)
+#define DELTA_UT1_UTC (0.0299836 / 86400.0) /* For 2025-05-22 */
+#define UT2JD(t)         ((t) / 86400.0 + 2440587.5 + DELTA_UT1_UTC)
 #define JDNOW            UT2JD(time(NULL))
 #endif /* UT2JD */
 
