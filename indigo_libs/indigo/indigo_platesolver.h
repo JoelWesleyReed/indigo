@@ -80,6 +80,9 @@ extern "C" {
 #define AGENT_PLATESOLVER_START_CALCULATE_PA_ERROR_ITEM		(AGENT_START_PROCESS_PROPERTY->items+4)
 #define AGENT_PLATESOLVER_START_RECALCULATE_PA_ERROR_ITEM	(AGENT_START_PROCESS_PROPERTY->items+5)
 
+#define AGENT_ABORT_PROCESS_PROPERTY					(INDIGO_PLATESOLVER_DEVICE_PRIVATE_DATA->agent_abort_process_property)
+#define AGENT_ABORT_PROCESS_ITEM      				(AGENT_ABORT_PROCESS_PROPERTY->items+0)
+
 #define AGENT_PLATESOLVER_PA_STATE_PROPERTY				(INDIGO_PLATESOLVER_DEVICE_PRIVATE_DATA->polar_alignment_state_property)
 #define AGENT_PLATESOLVER_PA_STATE_ITEM					(AGENT_PLATESOLVER_PA_STATE_PROPERTY->items+0)
 #define AGENT_PLATESOLVER_PA_STATE_DEC_DRIFT_2_ITEM		(AGENT_PLATESOLVER_PA_STATE_PROPERTY->items+1)
@@ -93,6 +96,7 @@ extern "C" {
 #define AGENT_PLATESOLVER_PA_STATE_POLAR_ERROR_ITEM		(AGENT_PLATESOLVER_PA_STATE_PROPERTY->items+9)
 #define AGENT_PLATESOLVER_PA_STATE_ALT_CORRECTION_UP_ITEM	(AGENT_PLATESOLVER_PA_STATE_PROPERTY->items+10)
 #define AGENT_PLATESOLVER_PA_STATE_AZ_CORRECTION_CW_ITEM	(AGENT_PLATESOLVER_PA_STATE_PROPERTY->items+11)
+#define AGENT_PLATESOLVER_PA_STATE_ACCURACY_WARNING_ITEM	(AGENT_PLATESOLVER_PA_STATE_PROPERTY->items+12)
 
 #define AGENT_PLATESOLVER_EXPOSURE_SETTINGS_PROPERTY			(INDIGO_PLATESOLVER_DEVICE_PRIVATE_DATA->exposure_settings_property)
 #define AGENT_PLATESOLVER_EXPOSURE_SETTINGS_EXPOSURE_ITEM		(AGENT_PLATESOLVER_EXPOSURE_SETTINGS_PROPERTY->items+0)
@@ -140,6 +144,7 @@ typedef struct {
 	indigo_property *wcs_property;
 	indigo_property *sync_mode_property;
 	indigo_property *start_process_property;
+	indigo_property *agent_abort_process_property;
 	indigo_property *abort_property;
 	indigo_property *image_property;
 	indigo_property *image_output_property;
@@ -162,6 +167,9 @@ typedef struct {
 	double pa_target_dec;
 	double pa_alt_error;
 	double pa_az_error;
+	double pa_initial_error;
+	indigo_property_state imager_capture_state;
+	indigo_property_state guider_process_state;
 	void (*save_config)(indigo_device *);
 	bool (*solve)(indigo_device *, void *image, unsigned long size);
 	void (*abort)(indigo_device *);
