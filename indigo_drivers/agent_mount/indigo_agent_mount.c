@@ -730,7 +730,7 @@ static void handle_site_change(indigo_device *device) {
 	char *related_agent_name = indigo_filter_first_related_agent(device, "Imager Agent");
 	if (related_agent_name) {
 		indigo_set_fits_header(FILTER_DEVICE_CONTEXT->client, related_agent_name, "SITELAT", "'%d %02d %02d'", (int)(AGENT_GEOGRAPHIC_COORDINATES_LATITUDE_ITEM->number.value), ((int)(fabs(AGENT_GEOGRAPHIC_COORDINATES_LATITUDE_ITEM->number.value) * 60)) % 60, ((int)(fabs(AGENT_GEOGRAPHIC_COORDINATES_LATITUDE_ITEM->number.value) * 3600)) % 60);
-		indigo_set_fits_header(FILTER_DEVICE_CONTEXT->client, related_agent_name, "SITELONG", "'%d %02d %02d'", (int)(AGENT_GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM->number.value), ((int)(fabs(AGENT_GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM->number.value) * 60)) % 60, ((int)(fabs(AGENT_GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM->number.value) * 3600)) % 60);
+		indigo_set_fits_header(FILTER_DEVICE_CONTEXT->client, related_agent_name, "SITELONG", "'%d %02d %02d'", (int)(AGENT_GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM->number.value > 180.0 ? 360.0-AGENT_GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM->number.value : AGENT_GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM->number.value), ((int)(fabs(AGENT_GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM->number.value) * 60)) % 60, ((int)(fabs(AGENT_GEOGRAPHIC_COORDINATES_LONGITUDE_ITEM->number.value) * 3600)) % 60);
 	}
 	// update display coordinates
 	handle_mount_change(device);
